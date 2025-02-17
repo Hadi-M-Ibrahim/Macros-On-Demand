@@ -1,22 +1,9 @@
 import React from "react";
 import { SafeAreaView, Text, StyleSheet, TouchableOpacity } from "react-native";
-import Auth0 from "react-native-auth0";
-
-const auth0 = new Auth0({
-  domain: "dev-mywx83oyychy6a37.us.auth0.com",
-  clientId: "EdjFXPdcXOOlqZeLz0V53pi6utaumwIW",
-});
 
 const LoginScreen = ({ navigation }) => {
   const onLogin = async () => {
-    try {
-      const credentials = await auth0.webAuth.authorize({
-        scope: "openid profile email",
-      });
-      navigation.navigate("Inputs");
-    } catch (error) {
-      console.log(error);
-    }
+    console.log("To be implmenteted");
   };
 
   const onContinueAsGuest = () => {

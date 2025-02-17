@@ -12,6 +12,9 @@
     "@expo/metro-runtime": "~3.2.1",
     "@react-navigation/native": "^6.1.17",
     "@react-navigation/stack": "^6.3.29",
+    "@tamagui/core": "^1.125.2",
+    "@tamagui/themes": "^1.125.2",
+    "@types/react": "~18.2.79",
     "expo": "~51.0.14",
     "expo-auth-session": "~5.5.2",
     "expo-status-bar": "~1.12.1",
@@ -25,7 +28,8 @@
     "react-native-screens": "^3.31.1",
     "react-native-web": "~0.19.10",
     "react-native-webview": "^13.8.6",
-    "tamagui": "^1.125.2"
+    "tamagui": "^1.125.2",
+    "typescript": "~5.3.3"
   },
   "devDependencies": {
     "@babel/core": "^7.20.0"

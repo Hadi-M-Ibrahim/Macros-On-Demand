@@ -24,7 +24,7 @@ const App = () => {
           >
             <Stack.Screen
               name="SignUp"
-              component={LoginScreen}
+              component={SignUpScreen}
               options={{ headerShown: false }}
             />
             <Stack.Screen

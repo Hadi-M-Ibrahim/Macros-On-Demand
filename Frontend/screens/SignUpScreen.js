@@ -74,6 +74,16 @@ const SignUpScreen = ({ navigation }) => {
             </Text>
           </TouchableOpacity>
 
+          <TouchableOpacity
+            style={styles.button2}
+            activeOpacity={0.7}
+            onPress={() => navigation.navigate("Inputs")}
+          >
+            <Text style={{ color: "white", fontWeight: "bold" }}>
+              Continue as Guest
+            </Text>
+          </TouchableOpacity>
+
           <Button
             style={{
               backgroundColor: "transparent",
@@ -108,6 +118,14 @@ const styles = StyleSheet.create({
     width: "100%",
     borderRadius: 16,
     marginTop: 16,
+    alignItems: "center",
+  },
+  button2: {
+    backgroundColor: "#4A2040",
+    padding: 16,
+    width: "100%",
+    borderRadius: 16,
+    marginTop: 0,
     alignItems: "center",
   },
 });

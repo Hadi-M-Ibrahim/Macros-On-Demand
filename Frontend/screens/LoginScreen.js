@@ -1,6 +1,6 @@
 import React, { useState } from "react";
-import { SafeAreaView } from "react-native";
-import { Button, Input, Stack, Text, YStack } from "tamagui";
+import { StyleSheet, TouchableOpacity, SafeAreaView } from "react-native";
+import { Input, Stack, Text, YStack } from "tamagui";
 
 const LoginScreen = ({ navigation }) => {
   const [email, setEmail] = useState("");
@@ -8,10 +8,6 @@ const LoginScreen = ({ navigation }) => {
 
   const onLogin = async () => {
     console.log("To be implemented");
-  };
-
-  const onContinueAsGuest = () => {
-    navigation.navigate("Inputs");
   };
 
   return (
@@ -59,31 +55,57 @@ const LoginScreen = ({ navigation }) => {
             padding="$2"
           />
         </Stack>
-
-        <Button
+        <TouchableOpacity
+          style={styles.button}
+          activeOpacity={0.7}
           onPress={onLogin}
-          backgroundColor="#9F6BA0"
-          size="$4"
-          width="100%"
-          borderRadius="$4"
-          marginTop="$4"
         >
-          Login
-        </Button>
+          <Text color="white" fontWeight="bold">
+            Login
+          </Text>
+        </TouchableOpacity>
 
-        <Button
-          onPress={onContinueAsGuest}
-          backgroundColor="#4A2040"
-          size="$4"
-          width="100%"
-          borderRadius="$4"
-          marginTop="$2"
+        <TouchableOpacity
+          style={styles.button2}
+          activeOpacity={0.7}
+          onPress={() => navigation.navigate("Inputs")}
         >
-          Continue as Guest
-        </Button>
+          <Text style={{ color: "white", fontWeight: "bold" }}>
+            Continue as Guest
+          </Text>
+        </TouchableOpacity>
       </YStack>
     </SafeAreaView>
   );
 };
+
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
+  },
+  background: {
+    position: "absolute",
+    width: "100%",
+    height: "100%",
+  },
+  button: {
+    backgroundColor: "#9F6BA0",
+    padding: 16,
+    width: "100%",
+    borderRadius: 16,
+    marginTop: 16,
+    alignItems: "center",
+  },
+  button2: {
+    backgroundColor: "#4A2040",
+    padding: 16,
+    width: "100%",
+    borderRadius: 16,
+    marginTop: 0,
+    alignItems: "center",
+  },
+});
 
 export default LoginScreen;

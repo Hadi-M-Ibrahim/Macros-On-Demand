@@ -2,15 +2,22 @@ import React from "react";
 
 import { NavigationContainer } from "@react-navigation/native";
 import { createStackNavigator } from "@react-navigation/stack";
-import { isFirstLaunch } from "./storageUtils";
-
+import AsyncStorage from "@react-native-async-storage/async-storage";
 import { TamaguiProvider, Theme } from "tamagui";
 import config from "./tamagui.config";
-
 import SignUpScreen from "./screens/SignUpScreen";
 import LoginScreen from "./screens/LoginScreen";
 import InputScreen from "./screens/InputScreen";
 import ResultsScreen from "./screens/ResultsScreen";
+
+const isFirstLaunch = async () => {
+  const alreadyLaunched = await AsyncStorage.getItem("hasLaunched");
+  if (alreadyLaunched === null) {
+    return true;
+  } else {
+    return false;
+  }
+};
 
 const Stack = createStackNavigator();
 

@@ -16,7 +16,6 @@ const InputScreen = () => {
   const [protein, setProtein] = useState("0");
   const [carbs, setCarbs] = useState("0");
   const [fat, setFat] = useState("0");
-
   const navigation = useNavigation();
 
   const OnSubmit = () => {

@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import { StyleSheet, TouchableOpacity, SafeAreaView } from "react-native";
 import { Input, Stack, Text, YStack, Card } from "tamagui";
+import { LinearGradient } from "@tamagui/linear-gradient";
 
 const LoginScreen = ({ navigation }) => {
   const [email, setEmail] = useState("");
@@ -19,6 +20,12 @@ const LoginScreen = ({ navigation }) => {
         backgroundColor: "pink",
       }}
     >
+      <LinearGradient
+        colors={["#4A2040", "#9F6BA0"]}
+        start={[0, 0]}
+        end={[1, 1]}
+        style={styles.background}
+      />
       <Card
         elevate
         size="$4"

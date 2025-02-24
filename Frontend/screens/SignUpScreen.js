@@ -7,7 +7,7 @@ const SignUpScreen = ({ navigation }) => {
   return (
     <SafeAreaView style={styles.container}>
       <LinearGradient
-        colors={["#FFB6C1", "#FF69B4"]}
+        colors={["#9F6BA0", "#4A2040"]}
         start={[0, 0]}
         end={[1, 1]}
         style={styles.background}

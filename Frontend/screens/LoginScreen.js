@@ -52,7 +52,7 @@ const LoginScreen = ({ navigation }) => {
             color="#4A2040"
             textAlign="center"
           >
-            Login
+            Macros On Demand
           </Text>
 
           <Stack width="100%">

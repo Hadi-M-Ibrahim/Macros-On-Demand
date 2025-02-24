@@ -33,7 +33,7 @@ const SignUpScreen = ({ navigation }) => {
             color="#4A2040"
             textAlign="center"
           >
-            Sign Up
+            Macros On Demand
           </Text>
 
           <Stack width="100%">

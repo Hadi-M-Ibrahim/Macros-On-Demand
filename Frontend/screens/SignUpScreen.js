@@ -65,6 +65,12 @@ const SignUpScreen = ({ navigation }) => {
           Create Account
         </TouchableOpacity>
 
+       
+
+      <Button onPress={() => navigation.navigate('Login')}>
+        Go to login page
+      </Button>
+
       </YStack>
     </SafeAreaView>
   );

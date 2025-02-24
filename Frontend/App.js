@@ -2,7 +2,7 @@ import React from "react";
 
 import { NavigationContainer } from "@react-navigation/native";
 import { createStackNavigator } from "@react-navigation/stack";
-import { isFirstLaunch } from "./storageUtils";
+// import { isFirstLaunch } from "./storageUtils";
 
 import { TamaguiProvider, Theme } from "tamagui";
 import config from "./tamagui.config";
@@ -20,7 +20,8 @@ const App = () => {
       <Theme name="light">
         <NavigationContainer>
           <Stack.Navigator
-            initialRouteName={isFirstLaunch ? "SignUp" : "Login"}
+            // initialRouteName={isFirstLaunch ? "SignUp" : "Login"}
+            initialRouteNam="SignUp"
           >
             <Stack.Screen
               name="SignUp"

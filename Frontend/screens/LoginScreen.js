@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { StyleSheet, TouchableOpacity, SafeAreaView } from "react-native";
-import { Input, Stack, Text, YStack, Card } from "tamagui";
+import { Button, Input, Stack, Text, YStack, Card } from "tamagui";
 import { LinearGradient } from "@tamagui/linear-gradient";
 
 const LoginScreen = ({ navigation }) => {
@@ -47,12 +47,12 @@ const LoginScreen = ({ navigation }) => {
           alignItems="center"
         >
           <Text
-            fontSize="$6"
+            fontSize="$8"
             fontWeight="bold"
             color="#4A2040"
             textAlign="center"
           >
-            Welcome to Macros On Demand
+            Login
           </Text>
 
           <Stack width="100%">
@@ -94,6 +94,20 @@ const LoginScreen = ({ navigation }) => {
               Continue as Guest
             </Text>
           </TouchableOpacity>
+          <Button
+            style={{
+              backgroundColor: "transparent",
+              alignSelf: "center",
+            }}
+            onPress={() => navigation.navigate("SignUp")}
+          >
+            <text style={{ color: "black", textAlign: "center" }}>
+              Dont have an account?
+            </text>
+            <Text style={{ color: "#0000FF", textAlign: "center" }}>
+              Sign Up
+            </Text>
+          </Button>
         </YStack>
       </Card>
     </SafeAreaView>

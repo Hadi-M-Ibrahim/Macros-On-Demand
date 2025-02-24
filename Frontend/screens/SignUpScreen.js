@@ -87,12 +87,15 @@ const SignUpScreen = ({ navigation }) => {
           <Button
             style={{
               backgroundColor: "transparent",
-              alignSelf: "flex-end",
+              alignSelf: "center-end",
             }}
             onPress={() => navigation.navigate("Login")}
           >
+            <text style={{ color: "black", textAlign: "center" }}>
+              Already have an account?
+            </text>
             <Text style={{ color: "#0000FF", textAlign: "center" }}>
-              Already have an account? Sign in
+              Sign in
             </Text>
           </Button>
         </YStack>

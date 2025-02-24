@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { StyleSheet, TouchableOpacity, SafeAreaView } from "react-native";
-import { Input, Stack, Text, YStack } from "tamagui";
+import { Input, Stack, Text, YStack, Card } from "tamagui";
 
 const LoginScreen = ({ navigation }) => {
   const [email, setEmail] = useState("");
@@ -19,62 +19,76 @@ const LoginScreen = ({ navigation }) => {
         backgroundColor: "pink",
       }}
     >
-      <YStack
-        space="$4"
-        padding="$4"
-        borderRadius="$4"
-        backgroundColor="$color2"
-        alignItems="center"
+      <Card
+        elevate
+        size="$4"
+        bordered
+        padding="$6"
+        width={500}
+        backgroundColor="white"
+        borderWidth={0}
+        shadowColor="rgba(0, 0, 0, 0.1)"
+        shadowOffset={{ width: 5, height: 10 }}
+        shadowOpacity={0.3}
+        shadowRadius={6}
       >
-        <Text
-          fontSize="$6"
-          fontWeight="bold"
-          color="#4A2040"
-          textAlign="center"
+        <YStack
+          space="$4"
+          padding="$4"
+          borderRadius="$4"
+          backgroundColor="$color2"
+          alignItems="center"
         >
-          Welcome to Macros On Demand
-        </Text>
-
-        <Stack width="100%">
-          <Text>Email</Text>
-          <Input
-            placeholder="Enter your email: "
-            value={email}
-            onChangeText={setEmail}
-            padding="$2"
-          />
-        </Stack>
-
-        <Stack width="100%">
-          <Text>Password</Text>
-          <Input
-            placeholder="Enter your password: "
-            value={password}
-            onChangeText={setPassword}
-            secureTextEntry
-            padding="$2"
-          />
-        </Stack>
-        <TouchableOpacity
-          style={styles.button}
-          activeOpacity={0.7}
-          onPress={onLogin}
-        >
-          <Text color="white" fontWeight="bold">
-            Login
+          <Text
+            fontSize="$6"
+            fontWeight="bold"
+            color="#4A2040"
+            textAlign="center"
+          >
+            Welcome to Macros On Demand
           </Text>
-        </TouchableOpacity>
 
-        <TouchableOpacity
-          style={styles.button2}
-          activeOpacity={0.7}
-          onPress={() => navigation.navigate("Inputs")}
-        >
-          <Text style={{ color: "white", fontWeight: "bold" }}>
-            Continue as Guest
-          </Text>
-        </TouchableOpacity>
-      </YStack>
+          <Stack width="100%">
+            <Text>Email</Text>
+            <Input
+              placeholder="Enter your email: "
+              value={email}
+              onChangeText={setEmail}
+              padding="$2"
+            />
+          </Stack>
+
+          <Stack width="100%">
+            <Text>Password</Text>
+            <Input
+              placeholder="Enter your password: "
+              value={password}
+              onChangeText={setPassword}
+              secureTextEntry
+              padding="$2"
+            />
+          </Stack>
+          <TouchableOpacity
+            style={styles.button}
+            activeOpacity={0.7}
+            onPress={onLogin}
+          >
+            <Text color="white" fontWeight="bold">
+              Login
+            </Text>
+          </TouchableOpacity>
+
+          <TouchableOpacity
+            style={styles.button2}
+            activeOpacity={0.7}
+            onPress={() => navigation.navigate("Inputs")}
+          >
+            <Text style={{ color: "white", fontWeight: "bold" }}>
+              Continue as Guest
+            </Text>
+          </TouchableOpacity>
+        </YStack>
+      </Card>
     </SafeAreaView>
   );
 };

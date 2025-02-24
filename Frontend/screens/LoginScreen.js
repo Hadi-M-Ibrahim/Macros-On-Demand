@@ -2,13 +2,26 @@ import React, { useState } from "react";
 import { StyleSheet, TouchableOpacity, SafeAreaView } from "react-native";
 import { Button, Input, Stack, Text, YStack, Card } from "tamagui";
 import { LinearGradient } from "@tamagui/linear-gradient";
+// import { SafeAreaView } from "react-native";
+// import { Button, Input, Stack, Text, YStack } from "tamagui";
+import { TamaguiProvider, Theme} from "tamagui";
+import { useFonts, Poppins_400Regular } from "@expo-google-fonts/poppins";
+import * as Font from "expo-font";
 
 const LoginScreen = ({ navigation }) => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
 
+  const [fontsLoaded] = useFonts({
+    Poppins_400Regular, 
+  });
+
   const onLogin = async () => {
     console.log("To be implemented");
+  };
+
+  const onContinueAsGuest = () => {
+    navigation.navigate("Inputs");
   };
 
   return (
@@ -38,50 +51,55 @@ const LoginScreen = ({ navigation }) => {
         shadowOffset={{ width: 5, height: 10 }}
         shadowOpacity={0.3}
         shadowRadius={6}
+    >
+      <YStack
+        space="$4"
+        padding="$4"
+        borderRadius="$4"
+        backgroundColor="$color2"
+        alignItems="center"
       >
-        <YStack
-          space="$4"
-          padding="$4"
-          borderRadius="$4"
-          backgroundColor="$color2"
-          alignItems="center"
-        >
-          <Text
+        <Text
             fontSize="$8"
-            fontWeight="bold"
-            color="#4A2040"
-            textAlign="center"
-          >
+          fontWeight="bold"
+          color="#4A2040"
+          textAlign="center"
+          fontFamily="Poppins_400Regular"
+        >
             Macros On Demand
-          </Text>
+        </Text>
 
-          <Stack width="100%">
-            <Text>Email</Text>
-            <Input
-              placeholder="Enter your email: "
-              value={email}
-              onChangeText={setEmail}
-              padding="$2"
-            />
-          </Stack>
+        <Stack width="100%">
+          <Text
+            fontFamily="Poppins_400Regular"
+          >Email</Text>
+          <Input
+            placeholder="Enter your email: "
+            value={email}
+            onChangeText={setEmail}
+            padding="$2"
+          />
+        </Stack>
 
-          <Stack width="100%">
-            <Text>Password</Text>
-            <Input
-              placeholder="Enter your password: "
-              value={password}
-              onChangeText={setPassword}
-              secureTextEntry
-              padding="$2"
-            />
-          </Stack>
+        <Stack width="100%">
+          <Text
+            fontFamily="Poppins_400Regular"
+          >Password</Text>
+          <Input
+            placeholder="Enter your password: "
+            value={password}
+            onChangeText={setPassword}
+            secureTextEntry
+            padding="$2"
+          />
+        </Stack>
           <TouchableOpacity
             style={styles.button}
             activeOpacity={0.7}
-            onPress={onLogin}
+          onPress={onLogin}
           >
-            <Text color="white" fontWeight="bold">
-              Login
+            <Text color="white" fontWeight="bold" fontFamily="Poppins_400Regular">
+          Login
             </Text>
           </TouchableOpacity>
 
@@ -90,8 +108,8 @@ const LoginScreen = ({ navigation }) => {
             activeOpacity={0.7}
             onPress={() => navigation.navigate("Inputs")}
           >
-            <Text style={{ color: "white", fontWeight: "bold" }}>
-              Continue as Guest
+            <Text style={{ color: "white", fontWeight: "bold", fontFamily: "Poppins_400Regular" }}>
+          Continue as Guest
             </Text>
           </TouchableOpacity>
           <Button
@@ -107,8 +125,8 @@ const LoginScreen = ({ navigation }) => {
             <Text style={{ color: "#0000FF", textAlign: "center" }}>
               Sign Up
             </Text>
-          </Button>
-        </YStack>
+        </Button>
+      </YStack>
       </Card>
     </SafeAreaView>
   );

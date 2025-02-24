@@ -9,6 +9,8 @@ import SignUpScreen from "./screens/SignUpScreen";
 import LoginScreen from "./screens/LoginScreen";
 import InputScreen from "./screens/InputScreen";
 import ResultsScreen from "./screens/ResultsScreen";
+import { useFonts, Poppins_400Regular } from "@expo-google-fonts/poppins";
+import * as Font from "expo-font";
 
 const isFirstLaunch = async () => {
   const alreadyLaunched = await AsyncStorage.getItem("hasLaunched");

@@ -2,8 +2,14 @@ import React from "react";
 import { SafeAreaView, TouchableOpacity, StyleSheet } from "react-native";
 import { Button, Input, Stack, Text, YStack, Card } from "tamagui";
 import { LinearGradient } from "@tamagui/linear-gradient";
+import { TamaguiProvider, Theme} from "tamagui";
+import { useFonts, Poppins_400Regular } from "@expo-google-fonts/poppins";
+import * as Font from "expo-font";
 
 const SignUpScreen = ({ navigation }) => {
+  const [fontsLoaded] = useFonts({
+    Poppins_400Regular, 
+  });
   return (
     <SafeAreaView style={styles.container}>
       <LinearGradient
@@ -32,12 +38,15 @@ const SignUpScreen = ({ navigation }) => {
             fontWeight="bold"
             color="#4A2040"
             textAlign="center"
+            fontFamily="Poppins_400Regular"
           >
             Macros On Demand
           </Text>
 
           <Stack width="100%">
-            <Text>Email</Text>
+            <Text
+              fontFamily="Poppins_400Regular"
+            >Email</Text>
             <Input
               placeholder="Enter your email"
               padding="$3"
@@ -47,7 +56,9 @@ const SignUpScreen = ({ navigation }) => {
           </Stack>
 
           <Stack width="100%">
-            <Text>Password</Text>
+            <Text
+              fontFamily="Poppins_400Regular"
+            >Password</Text>
             <Input
               placeholder="Enter your password"
               secureTextEntry
@@ -58,7 +69,9 @@ const SignUpScreen = ({ navigation }) => {
           </Stack>
 
           <Stack width="100%">
-            <Text>Confirm Password</Text>
+            <Text
+            fontFamily="Poppins_400Regular"
+            >Confirm Password</Text>
             <Input
               placeholder="Confirm your password"
               secureTextEntry
@@ -69,7 +82,7 @@ const SignUpScreen = ({ navigation }) => {
           </Stack>
 
           <TouchableOpacity style={styles.button} activeOpacity={0.7}>
-            <Text color="white" fontWeight="bold">
+            <Text color="white" fontWeight="bold" fontFamily="Poppins_400Regular">
               Create Account
             </Text>
           </TouchableOpacity>
@@ -79,7 +92,7 @@ const SignUpScreen = ({ navigation }) => {
             activeOpacity={0.7}
             onPress={() => navigation.navigate("Inputs")}
           >
-            <Text style={{ color: "white", fontWeight: "bold" }}>
+            <Text style={{ color: "white", fontWeight: "bold", fontFamily: "Poppins_400Regular"}}>
               Continue as Guest
             </Text>
           </TouchableOpacity>
@@ -91,10 +104,10 @@ const SignUpScreen = ({ navigation }) => {
             }}
             onPress={() => navigation.navigate("Login")}
           >
-            <text style={{ color: "black", textAlign: "center" }}>
+            <text style={{ color: "black", textAlign: "center", fontFamily: "Poppins_400Regular" }}>
               Already have an account?
             </text>
-            <Text style={{ color: "#0000FF", textAlign: "center" }}>
+            <Text style={{ color: "#0000FF", textAlign: "center", fontFamily: "Poppins_400Regular" }}>
               Sign in
             </Text>
           </Button>

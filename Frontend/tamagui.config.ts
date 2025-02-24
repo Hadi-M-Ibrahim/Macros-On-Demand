@@ -1,5 +1,6 @@
 import { createTamagui } from "tamagui";
 import { tokens } from "@tamagui/themes";
+import { Poppins_400Regular } from '@expo-google-fonts/poppins'
 
 const config = createTamagui({
   themes: {
@@ -17,6 +18,16 @@ const config = createTamagui({
     p: "padding",
     m: "margin",
     bg: "backgroundColor",
+  },
+  fonts: {
+    body: {
+      family: "Poppins_400Regular", 
+      size: {
+        4: 18,
+        5: 20,
+        6: 24,
+      },
+    },
   },
 });
 

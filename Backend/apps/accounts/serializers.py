@@ -1,3 +1,5 @@
+# apps/accounts/serializers.py
+
 from rest_framework import serializers
 from .models import CustomUser
 
@@ -14,8 +16,24 @@ class UserSerializer(serializers.ModelSerializer):
         ]
         read_only_fields = ['id', 'saved_meals']
 
-class GoogleOAuthSerializer(serializers.Serializer):
+class RegistrationSerializer(serializers.Serializer):
     """
-    Serializer for receiving a Google OAuth ID token.
+    Serializer for registering a new user with email and password.
     """
-    token = serializers.CharField()
+    email = serializers.EmailField()
+    password = serializers.CharField(write_only=True)
+    confirm_password = serializers.CharField(write_only=True)
+
+    def validate(self, data):
+        if data['password'] != data['confirm_password']:
+            raise serializers.ValidationError("Passwords do not match.")
+        return data
+
+class LoginSerializer(serializers.Serializer):
+    """
+    Serializer for logging in with email and password.
+    """
+    email = serializers.EmailField()
+    password = serializers.CharField(write_only=True)
+
+

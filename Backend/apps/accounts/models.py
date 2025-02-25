@@ -2,7 +2,7 @@ from django.contrib.auth.models import AbstractUser, Group, Permission
 from django.db import models
 
 class CustomUser(AbstractUser):
-    # Extra fields for macros
+    #  fields for macros
     calories_goal = models.PositiveIntegerField(null=True, blank=True)
     protein_goal = models.PositiveIntegerField(null=True, blank=True)
     carbs_goal = models.PositiveIntegerField(null=True, blank=True)

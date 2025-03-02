@@ -33,7 +33,8 @@
     "react-native-web": "~0.19.10",
     "react-native-webview": "^13.8.6",
     "tamagui": "^1.125.2",
-    "typescript": "~5.3.3"
+    "typescript": "~5.3.3",
+    "expo-linear-gradient": "~13.0.2"
   },
   "devDependencies": {
     "@babel/core": "^7.20.0"

@@ -1,19 +1,15 @@
 import React, { useState } from "react";
-import { StyleSheet, TouchableOpacity, SafeAreaView } from "react-native";
+import { StyleSheet, TouchableOpacity, View } from "react-native";
 import { Button, Input, Stack, Text, YStack, Card } from "tamagui";
 import { LinearGradient } from "@tamagui/linear-gradient";
-// import { SafeAreaView } from "react-native";
-// import { Button, Input, Stack, Text, YStack } from "tamagui";
-import { TamaguiProvider, Theme} from "tamagui";
 import { useFonts, Poppins_400Regular } from "@expo-google-fonts/poppins";
-import * as Font from "expo-font";
 
 const LoginScreen = ({ navigation }) => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
 
   const [fontsLoaded] = useFonts({
-    Poppins_400Regular, 
+    Poppins_400Regular,
   });
 
   const onLogin = async () => {
@@ -25,7 +21,7 @@ const LoginScreen = ({ navigation }) => {
   };
 
   return (
-    <SafeAreaView
+    <View
       style={{
         flex: 1,
         justifyContent: "center",
@@ -44,62 +40,62 @@ const LoginScreen = ({ navigation }) => {
         size="$4"
         bordered
         padding="$6"
-        width={500}
+        width={"80%"}
         backgroundColor="white"
         borderWidth={0}
         shadowColor="rgba(0, 0, 0, 0.1)"
         shadowOffset={{ width: 5, height: 10 }}
         shadowOpacity={0.3}
         shadowRadius={6}
-    >
-      <YStack
-        space="$4"
-        padding="$4"
-        borderRadius="$4"
-        backgroundColor="$color2"
-        alignItems="center"
       >
-        <Text
-            fontSize="$8"
-          fontWeight="bold"
-          color="#4A2040"
-          textAlign="center"
-          fontFamily="Poppins_400Regular"
+        <YStack
+          space="$4"
+          padding="$4"
+          borderRadius="$4"
+          backgroundColor="$color2"
+          alignItems="center"
         >
+          <Text
+            fontSize="$8"
+            fontWeight="bold"
+            color="#4A2040"
+            textAlign="center"
+            fontFamily="Poppins_400Regular"
+          >
             Macros On Demand
-        </Text>
+          </Text>
 
-        <Stack width="100%">
-          <Text
-            fontFamily="Poppins_400Regular"
-          >Email</Text>
-          <Input
-            placeholder="Enter your email: "
-            value={email}
-            onChangeText={setEmail}
-            padding="$2"
-          />
-        </Stack>
+          <Stack width="100%">
+            <Text fontFamily="Poppins_400Regular">Email</Text>
+            <Input
+              placeholder="Enter your email: "
+              value={email}
+              onChangeText={setEmail}
+              padding="$2"
+            />
+          </Stack>
 
-        <Stack width="100%">
-          <Text
-            fontFamily="Poppins_400Regular"
-          >Password</Text>
-          <Input
-            placeholder="Enter your password: "
-            value={password}
-            onChangeText={setPassword}
-            secureTextEntry
-            padding="$2"
-          />
-        </Stack>
+          <Stack width="100%">
+            <Text fontFamily="Poppins_400Regular">Password</Text>
+            <Input
+              placeholder="Enter your password: "
+              value={password}
+              onChangeText={setPassword}
+              secureTextEntry
+              padding="$2"
+            />
+          </Stack>
           <TouchableOpacity
             style={styles.button}
             activeOpacity={0.7}
-          onPress={onLogin}
+            onPress={onLogin}
           >
-            <Text color="white" fontWeight="bold" fontFamily="Poppins_400Regular">
-          Login
+            <Text
+              color="white"
+              fontWeight="bold"
+              fontFamily="Poppins_400Regular"
+            >
+              Login
             </Text>
           </TouchableOpacity>
 
@@ -108,8 +104,14 @@ const LoginScreen = ({ navigation }) => {
             activeOpacity={0.7}
             onPress={() => navigation.navigate("Inputs")}
           >
-            <Text style={{ color: "white", fontWeight: "bold", fontFamily: "Poppins_400Regular" }}>
-          Continue as Guest
+            <Text
+              style={{
+                color: "white",
+                fontWeight: "bold",
+                fontFamily: "Poppins_400Regular",
+              }}
+            >
+              Continue as Guest
             </Text>
           </TouchableOpacity>
           <Button
@@ -119,16 +121,16 @@ const LoginScreen = ({ navigation }) => {
             }}
             onPress={() => navigation.navigate("SignUp")}
           >
-            <text style={{ color: "black", textAlign: "center" }}>
+            <Text style={{ color: "black", textAlign: "center" }}>
               Don't have an account?
-            </text>
+            </Text>
             <Text style={{ color: "#0000FF", textAlign: "center" }}>
               Sign Up
             </Text>
-        </Button>
-      </YStack>
+          </Button>
+        </YStack>
       </Card>
-    </SafeAreaView>
+    </View>
   );
 };
 

@@ -120,7 +120,7 @@ const LoginScreen = ({ navigation }) => {
             onPress={() => navigation.navigate("SignUp")}
           >
             <text style={{ color: "black", textAlign: "center" }}>
-              Dont have an account?
+              Don't have an account?
             </text>
             <Text style={{ color: "#0000FF", textAlign: "center" }}>
               Sign Up

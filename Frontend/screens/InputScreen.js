@@ -7,9 +7,15 @@ import {
   StyleSheet,
   Text,
   Vibration,
+  TouchableOpacity,
 } from "react-native";
 import { useNavigation } from "@react-navigation/native";
 import { IdealMenuItem } from "../Internal";
+import { LinearGradient } from "@tamagui/linear-gradient";
+import { Input, Stack, YStack, Card } from "tamagui";
+import { TamaguiProvider, Theme} from "tamagui";
+import { useFonts, Poppins_400Regular } from "@expo-google-fonts/poppins";
+import * as Font from "expo-font";
 
 const InputScreen = () => {
   const [calories, setCalories] = useState("0");
@@ -17,6 +23,10 @@ const InputScreen = () => {
   const [carbs, setCarbs] = useState("0");
   const [fat, setFat] = useState("0");
   const navigation = useNavigation();
+
+  const [fontsLoaded] = useFonts({
+    Poppins_400Regular, 
+  });
 
   const OnSubmit = () => {
     Vibration.vibrate();
@@ -35,7 +45,34 @@ const InputScreen = () => {
 
   return (
     <SafeAreaView style={styles.container}>
-      <ScrollView>
+      <LinearGradient
+        colors={["#4A2040", "#9F6BA0"]}
+        start={[0, 0]}
+        end={[1, 1]}
+        style={styles.background}
+      />
+
+      <ScrollView contentContainerStyle={{ flexGrow: 1, justifyContent: "center", alignItems: "center" }}>
+        <Card
+        elevate
+        size="$4"
+        bordered
+        padding="$6"
+        width={500}
+        backgroundColor="white"
+        borderWidth={0}
+        shadowColor="rgba(0, 0, 0, 0.1)"
+        shadowOffset={{ width: 5, height: 10 }}
+        shadowOpacity={0.3}
+        shadowRadius={10}
+        >
+        <YStack
+          space="$4"
+          padding="$4"
+          borderRadius="$4"
+          backgroundColor="$color2"
+          alignItems="center"
+        >
         <Text style={styles.title}>Input Ideal Macros</Text>
         <Text style={styles.label}>Calories:</Text>
         <TextInput
@@ -65,16 +102,26 @@ const InputScreen = () => {
           onChangeText={setFat}
           keyboardType="numeric"
         />
-        <Button title="Submit" onPress={OnSubmit} color={styles.button.color} />
+        <TouchableOpacity style={styles.button} onPress={OnSubmit}>
+          <Text style={styles.buttonText}>Submit</Text>
+        </TouchableOpacity>
+
+        </YStack>
+        </Card>
       </ScrollView>
     </SafeAreaView>
   );
 };
 
 const styles = StyleSheet.create({
+  background: {
+    position: "absolute",
+    width: "100%",
+    height: "100%",
+  },
   container: {
     flex: 1,
-    backgroundColor: "#D8F3DC",
+    backgroundColor: "pink",
     padding: 20,
     alignItems: "center",
     justifyContent: "center",
@@ -82,25 +129,35 @@ const styles = StyleSheet.create({
   title: {
     fontSize: 24,
     fontWeight: "bold",
-    color: "#1B4332",
+    color: "#4A2040",
     marginBottom: 20,
+    fontFamily: "Poppins_400Regular",
   },
   label: {
-    color: "#1B4332",
+    color: "#4A2040",
     fontSize: 18,
     marginBottom: 5,
+    fontFamily: "Poppins_400Regular",
   },
   input: {
     height: 40,
-    borderColor: "#74C69D",
+    borderColor: "#a393a3",
     borderWidth: 1,
     marginBottom: 20,
     paddingHorizontal: 10,
-    backgroundColor: "#B7E4C7",
+    backgroundColor: "#a393a3",
     color: "#1B4332",
   },
   button: {
-    color: "#2D6A4F",
+    backgroundColor: "#9F6BA0",
+    padding: 16,
+    width: "100%",
+    borderRadius: 16,
+    marginTop: 16,
+    alignItems: "center",
+  },
+  buttonText: {
+    fontFamily: "Poppins_400Regular",
   },
 });
 

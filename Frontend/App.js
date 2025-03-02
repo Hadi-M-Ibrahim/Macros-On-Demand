@@ -9,6 +9,7 @@ import SignUpScreen from "./screens/SignUpScreen";
 import LoginScreen from "./screens/LoginScreen";
 import InputScreen from "./screens/InputScreen";
 import ResultsScreen from "./screens/ResultsScreen";
+import TestScreen from "./screens/TestScreen";
 import { useFonts, Poppins_400Regular } from "@expo-google-fonts/poppins";
 import * as Font from "expo-font";
 
@@ -49,6 +50,11 @@ const App = () => {
             <Stack.Screen
               name="Results"
               component={ResultsScreen}
+              options={{ headerShown: false }}
+            />
+            <Stack.Screen
+              name="Test"
+              component={TestScreen}
               options={{ headerShown: false }}
             />
           </Stack.Navigator>

@@ -2,31 +2,34 @@ from django.contrib.auth.models import AbstractUser, Group, Permission
 from django.db import models
 
 class CustomUser(AbstractUser):
-    #  fields for macros
+    USERNAME_FIELD = 'email'
+    REQUIRED_FIELDS = []  
+
+    email = models.EmailField(unique=True, blank=False, null=False)
+    
+    # Macros
     calories_goal = models.PositiveIntegerField(null=True, blank=True)
     protein_goal = models.PositiveIntegerField(null=True, blank=True)
     carbs_goal = models.PositiveIntegerField(null=True, blank=True)
     fats_goal = models.PositiveIntegerField(null=True, blank=True)
-    
-   
+
     saved_meals = models.ManyToManyField(
-        'meals.Meal', 
+        'meals.Meal',
         blank=True,
         related_name='saved_by_users'
     )
 
-    # Override inherited fields to avoid clashes with the built-in User model.
+    # Avoid name collisions for Group and Permission
     groups = models.ManyToManyField(
         Group,
-        related_name="customuser_groups",  # New related name to avoid clash
+        related_name="customuser_groups",
         blank=True,
         help_text='The groups this user belongs to.',
         verbose_name='groups',
     )
-    
     user_permissions = models.ManyToManyField(
         Permission,
-        related_name="customuser_permissions",  # New related name to avoid clash
+        related_name="customuser_permissions",
         blank=True,
         help_text='Specific permissions for this user.',
         verbose_name='user permissions',
@@ -34,5 +37,6 @@ class CustomUser(AbstractUser):
 
     def __str__(self):
         return self.email or self.username
+
 
 

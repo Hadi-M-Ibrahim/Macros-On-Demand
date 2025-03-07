@@ -1,8 +1,11 @@
 from rest_framework import serializers
 from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
+from apps.meals.serializers import MealSerializer
 from .models import CustomUser
 
 class UserSerializer(serializers.ModelSerializer):
+    saved_meals = MealSerializer(many=True, read_only=True)
+
     class Meta:
         model = CustomUser
         fields = [
@@ -10,7 +13,6 @@ class UserSerializer(serializers.ModelSerializer):
             'calories_goal', 'protein_goal', 'carbs_goal', 'fats_goal',
             'saved_meals'
         ]
-        read_only_fields = ['id', 'saved_meals']
 
 class RegistrationSerializer(serializers.Serializer):
     email = serializers.EmailField()

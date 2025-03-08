@@ -13,11 +13,13 @@ Ensure you have Python 3.12.8 installed. Then create and activate a new virtual 
 
 For Windows:
   python -m venv venv
+  
   venv\Scripts\activate
 
 For macOS/Linux:
   python -m venv venv
-  source venv/bin/activate
+  s
+  ource venv/bin/activate
 
 ## Step 3: Install Dependencies:
 Install the required packages by running:

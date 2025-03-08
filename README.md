@@ -12,14 +12,16 @@ backend requires Python 3.12.8.
 Ensure you have Python 3.12.8 installed. Then create and activate a new virtual environment:
 
 For Windows:
+
   python -m venv venv
   
   venv\Scripts\activate
 
 For macOS/Linux:
+
   python -m venv venv
-  s
-  ource venv/bin/activate
+  
+  source venv/bin/activate
 
 ## Step 3: Install Dependencies:
 Install the required packages by running:

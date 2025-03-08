@@ -1,18 +1,27 @@
 from rest_framework import serializers
 from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
-from apps.meals.serializers import MealSerializer
-from .models import CustomUser
+from bson import ObjectId
+from apps.meals.serializers import MealSerializer, FoodItemSerializer
+from .models import CustomUser, SavedMeal
+from apps.meals.models import FoodItem
 
+
+# Used when returning a SavedMeal via the user detail endpoint.
+class SavedMealSerializer(serializers.ModelSerializer):
+    meal = MealSerializer(read_only=True)
+    
+    class Meta:
+        model = SavedMeal
+        fields = ['meal', 'food_item_ids']
+
+# This serializer is used in the user detail endpoint.
 class UserSerializer(serializers.ModelSerializer):
-    saved_meals = MealSerializer(many=True, read_only=True)
-
+    # Using the reverse accessor ("savedmeal_set") for SavedMeal records.
+    saved_meals = SavedMealSerializer(source='savedmeal_set', many=True, read_only=True)
+    
     class Meta:
         model = CustomUser
-        fields = [
-            'id', 'email',
-            'calories_goal', 'protein_goal', 'carbs_goal', 'fats_goal',
-            'saved_meals'
-        ]
+        fields = ['id', 'email', 'calories_goal', 'protein_goal', 'carbs_goal', 'fats_goal', 'saved_meals']
 
 class RegistrationSerializer(serializers.Serializer):
     email = serializers.EmailField()
@@ -24,25 +33,16 @@ class RegistrationSerializer(serializers.Serializer):
             raise serializers.ValidationError("Passwords do not match.")
         return data
 
+# Custom token serializer that ensures user_id is returned as a string
 class CustomTokenObtainPairSerializer(TokenObtainPairSerializer):
-    # Use 'email' as the username field
     username_field = 'email'
-    
     email = serializers.EmailField(write_only=True)
     password = serializers.CharField(write_only=True)
     
     def validate(self, attrs):
-        # Look up user by email and check password
-        credentials = {
-            'email': attrs.get('email'),
-            'password': attrs.get('password')
-        }
-        user = CustomUser.objects.filter(email=credentials['email']).first()
-        if user is None or not user.check_password(credentials['password']):
-            raise serializers.ValidationError("Invalid credentials.")
-        
         data = super().validate(attrs)
-        data['user'] = UserSerializer(user).data
+        data["user_id"] = str(self.user.id)
+        data["user"] = UserSerializer(self.user).data
         return data
 
 class MacroPreferencesSerializer(serializers.ModelSerializer):
@@ -50,5 +50,21 @@ class MacroPreferencesSerializer(serializers.ModelSerializer):
         model = CustomUser
         fields = ['calories_goal', 'protein_goal', 'carbs_goal', 'fats_goal']
 
+# Detailed serializer for SavedMeal, which includes full food item details.
+class SavedMealDetailSerializer(serializers.ModelSerializer):
+    meal = MealSerializer(read_only=True)
+    food_items = serializers.SerializerMethodField()
 
+    class Meta:
+        model = SavedMeal
+        fields = ['meal', 'food_items']
 
+    def get_food_items(self, obj):
+        if not obj.food_item_ids:
+            return []
+        try:
+            food_ids = [ObjectId(fid) for fid in obj.food_item_ids]
+        except Exception:
+            return []
+        food_items = FoodItem.objects.filter(id__in=food_ids)
+        return FoodItemSerializer(food_items, many=True).data

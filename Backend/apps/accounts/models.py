@@ -1,33 +1,44 @@
+from djongo import models as djongo_models
 from django.contrib.auth.models import AbstractUser, Group, Permission
-from django.db import models
+from .managers import CustomUserManager
+
+class SavedMeal(djongo_models.Model):
+    customuser = djongo_models.ForeignKey('accounts.CustomUser', on_delete=djongo_models.CASCADE)
+    meal = djongo_models.ForeignKey('meals.Meal', on_delete=djongo_models.CASCADE)
+    # Field to store list of food item IDs (from JSON payload)
+    food_item_ids = djongo_models.JSONField(blank=True, default=list)
+
+    class Meta:
+        unique_together = ('customuser', 'meal')
 
 class CustomUser(AbstractUser):
     USERNAME_FIELD = 'email'
-    REQUIRED_FIELDS = []  
+    REQUIRED_FIELDS = []  # No additional required fields
 
-    email = models.EmailField(unique=True, blank=False, null=False)
+    email = djongo_models.EmailField(unique=True, blank=False, null=False)
     
-    # Macros
-    calories_goal = models.PositiveIntegerField(null=True, blank=True)
-    protein_goal = models.PositiveIntegerField(null=True, blank=True)
-    carbs_goal = models.PositiveIntegerField(null=True, blank=True)
-    fats_goal = models.PositiveIntegerField(null=True, blank=True)
+    # Macro goals
+    calories_goal = djongo_models.PositiveIntegerField(null=True, blank=True)
+    protein_goal = djongo_models.PositiveIntegerField(null=True, blank=True)
+    carbs_goal = djongo_models.PositiveIntegerField(null=True, blank=True)
+    fats_goal = djongo_models.PositiveIntegerField(null=True, blank=True)
 
-    saved_meals = models.ManyToManyField(
+    # Saved meals (through the SavedMeal model)
+    saved_meals = djongo_models.ManyToManyField(
         'meals.Meal',
         blank=True,
-        related_name='saved_by_users'
+        related_name='saved_by_users',
+        through='accounts.SavedMeal'
     )
 
-    # Avoid name collisions for Group and Permission
-    groups = models.ManyToManyField(
+    groups = djongo_models.ManyToManyField(
         Group,
         related_name="customuser_groups",
         blank=True,
         help_text='The groups this user belongs to.',
         verbose_name='groups',
     )
-    user_permissions = models.ManyToManyField(
+    user_permissions = djongo_models.ManyToManyField(
         Permission,
         related_name="customuser_permissions",
         blank=True,
@@ -35,8 +46,30 @@ class CustomUser(AbstractUser):
         verbose_name='user permissions',
     )
 
+    objects = CustomUserManager()
+
     def __str__(self):
         return self.email or self.username
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

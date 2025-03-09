@@ -36,7 +36,7 @@ const InputScreen = () => {
       fat
     );
 
-    navigation.navigate("Results", { UsersIdealItem });
+    navigation.navigate("Results");
   };
 
   return (
@@ -148,6 +148,7 @@ const styles = StyleSheet.create({
   },
   buttonText: {
     fontFamily: "Poppins_400Regular",
+    color: "white",
   },
 });
 

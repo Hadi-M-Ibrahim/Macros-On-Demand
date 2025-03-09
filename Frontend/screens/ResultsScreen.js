@@ -3,7 +3,6 @@ import {
   View,
   Text,
   StyleSheet,
-  SafeAreaView,
   Dimensions,
   Animated,
   TouchableOpacity,
@@ -17,7 +16,25 @@ import { LinearGradient } from "@tamagui/linear-gradient";
 import { useFonts, Poppins_400Regular } from "@expo-google-fonts/poppins";
 import { Ionicons } from "@expo/vector-icons";
 
+const foodRec = "Recommended food: ";
+const restaurantStr = "Restaurant: ";
+const caloriesStr = "Calories: ";
+const proteinStr = "Protein: ";
+const carbStr = "Carbs: ";
+const fatStr = "Fat: ";
+
 const foodRecommendations = [
+  foodRec +
+    "\n\n" +
+    restaurantStr +
+    "\n\n" +
+    caloriesStr +
+    "\n\n" +
+    proteinStr +
+    "\n\n" +
+    carbStr +
+    "\n\n" +
+    fatStr,
   "Recommendation 1",
   "Recommendation 2",
   "Recommendation 3",
@@ -62,7 +79,7 @@ const ResultsScreen = ({ navigation }) => {
   useFonts({ Poppins_400Regular });
 
   return (
-    <SafeAreaView style={{ flex: 1 }}>
+    <View style={{ flex: 1 }}>
       <LinearGradient
         colors={["#4A2040", "#9F6BA0"]}
         start={[0, 0]}
@@ -70,7 +87,10 @@ const ResultsScreen = ({ navigation }) => {
         style={StyleSheet.absoluteFill}
       />
       <GestureHandlerRootView style={styles.container}>
-        <PanGestureHandler onHandlerStateChange={handleSwipe}>
+        <PanGestureHandler
+          onGestureEvent={handleSwipe}
+          onHandlerStateChange={handleSwipe}
+        >
           <Animated.View style={[styles.box, { transform: [{ translateX }] }]}>
             <Text style={styles.text}>{foodRecommendations[index]}</Text>
           </Animated.View>
@@ -82,7 +102,7 @@ const ResultsScreen = ({ navigation }) => {
       >
         <Ionicons name="person-circle-outline" size={50} color="white" />
       </TouchableOpacity>
-    </SafeAreaView>
+    </View>
   );
 };
 
@@ -100,16 +120,21 @@ const styles = StyleSheet.create({
     padding: 20,
     borderRadius: 10,
     width: width * 0.7,
-    height: height * 0.3,
+    height: height * 0.7,
     justifyContent: "center",
     alignItems: "center",
     position: "absolute",
+    shadowColor: "#000",
+    shadowOffset: { width: 3, height: 6 },
+    shadowOpacity: 0.2,
+    shadowRadius: 6,
   },
   text: {
-    textAlign: "center",
+    textAlign: "start",
     fontFamily: "Poppins_400Regular",
     fontSize: 20,
   },
+
   iconContainer: {
     position: "absolute",
     top: 10,

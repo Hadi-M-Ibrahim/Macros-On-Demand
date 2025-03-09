@@ -4,7 +4,15 @@ import { GestureHandlerRootView, PanGestureHandler, State } from "react-native-g
 import { LinearGradient } from "@tamagui/linear-gradient";
 import { useFonts, Poppins_400Regular } from "@expo-google-fonts/poppins";
 
+const foodRec = "Recommended food: ";
+const restaurantStr = "Restaurant: ";
+const caloriesStr = "Calories: ";
+const proteinStr = "Protein: ";
+const carbStr = "Carbs: ";
+const fatStr = "Fat: ";
+
 const foodRecommendations = [
+  foodRec + "\n\n" + restaurantStr + "\n\n" + caloriesStr + "\n\n" + proteinStr + "\n\n" + carbStr + "\n\n" + fatStr,
   "Recommendation 1",
   "Recommendation 2",
   "Recommendation 3",
@@ -75,13 +83,17 @@ const styles = StyleSheet.create({
     padding: 20,
     borderRadius: 10,
     width: width * 0.7,
-    height: height * 0.3,
+    height: height * 0.7,
     justifyContent: "center",
     alignItems: "center",
     position: "absolute",
+    shadowColor: "#000",
+    shadowOffset: {width: 3, height: 6},
+    shadowOpacity: 0.2,
+    shadowRadius: 6,
   },
   text: {
-    textAlign: "center",
+    textAlign: "start",
     fontFamily: "Poppins_400Regular",
     fontSize: 20,
   },

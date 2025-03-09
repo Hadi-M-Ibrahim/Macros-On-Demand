@@ -23,16 +23,6 @@ const TestScreen = () => {
     const { translationX, state } = event.nativeEvent;
     
     if (state === State.END) {
-      // if (translationX > 50 || translationX < -50) {
-      //   Animated.timing(translateX, {
-      //     toValue: translationX > 0 ? width : -width,
-      //     duration: 500,
-      //     useNativeDriver: true,
-      //   }).start(() => {
-      //     setIndex(getNextIndex());
-      //     translateX.setValue(0); 
-      //   });
-      // }
       if (translationX > 50 ) {
         Animated.timing(translateX, {
           toValue: width,

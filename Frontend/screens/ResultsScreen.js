@@ -24,17 +24,6 @@ const carbStr = "Carbs: ";
 const fatStr = "Fat: ";
 
 const foodRecommendations = [
-  foodRec +
-    "\n\n" +
-    restaurantStr +
-    "\n\n" +
-    caloriesStr +
-    "\n\n" +
-    proteinStr +
-    "\n\n" +
-    carbStr +
-    "\n\n" +
-    fatStr,
   "Recommendation 1",
   "Recommendation 2",
   "Recommendation 3",
@@ -92,7 +81,8 @@ const ResultsScreen = ({ navigation }) => {
           onHandlerStateChange={handleSwipe}
         >
           <Animated.View style={[styles.box, { transform: [{ translateX }] }]}>
-            <Text style={styles.text}>{foodRecommendations[index]}</Text>
+            {/* <Text style={styles.text}>{foodRecommendations[index]}</Text> */}
+            <Text style={styles.text}>{foodRec + "\n\n" + restaurantStr + "\n\n" + caloriesStr + "\n\n" + proteinStr + "\n\n" + carbStr + "\n\n" + fatStr}</Text>
           </Animated.View>
         </PanGestureHandler>
       </GestureHandlerRootView>

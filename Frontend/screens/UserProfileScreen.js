@@ -28,7 +28,7 @@ const UserProfile = () => {
         style={styles.profileIcon}
       />{" "}
       {/* navigate to saved meals screen once its made*/}
-      <TouchableOpacity onPress={() => alert("Navigating to Saved Meals...")}>
+      <TouchableOpacity onPress={() => navigation.navigate("SavedMeals")}>
         <Text style={styles.menuItem}>Saved Meals</Text>
       </TouchableOpacity>
       {/* navigate to settings screen once its made*/}

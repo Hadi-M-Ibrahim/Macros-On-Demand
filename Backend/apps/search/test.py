@@ -20,7 +20,8 @@ class TestMealAlgorithm(unittest.TestCase):
         # Sample food items from McDonald's
         self.mcdonalds_items = [
             {
-                "_id": ObjectId("67cbcd5d57283efc873ae001"),
+                "id": ObjectId("67cbcd5d57283efc873ae001"),
+                "item_name": "Big Mac",
                 "restaurant": "McDonald's",
                 "food_category": "Burgers",
                 "calories": 500,
@@ -29,7 +30,8 @@ class TestMealAlgorithm(unittest.TestCase):
                 "fats": 20
             },
             {
-                "_id": ObjectId("67cbcd5d57283efc873ae002"),
+                "id": ObjectId("67cbcd5d57283efc873ae002"),
+                "item_name": "Quarter Pounder",
                 "restaurant": "McDonald's",
                 "food_category": "Burgers",
                 "calories": 700,
@@ -38,7 +40,8 @@ class TestMealAlgorithm(unittest.TestCase):
                 "fats": 30
             },
             {
-                "_id": ObjectId("67cbcd5d57283efc873ae003"),
+                "id": ObjectId("67cbcd5d57283efc873ae003"),
+                "item_name": "Medium Fries",
                 "restaurant": "McDonald's",
                 "food_category": "Fried Potatoes",
                 "calories": 300,
@@ -47,7 +50,8 @@ class TestMealAlgorithm(unittest.TestCase):
                 "fats": 15
             },
             {
-                "_id": ObjectId("67cbcd5d57283efc873ae004"),
+                "id": ObjectId("67cbcd5d57283efc873ae004"),
+                "item_name": "McFlurry",
                 "restaurant": "McDonald's",
                 "food_category": "Desserts",
                 "calories": 200,
@@ -60,7 +64,8 @@ class TestMealAlgorithm(unittest.TestCase):
         # Sample food items from Burger King
         self.burger_king_items = [
             {
-                "_id": ObjectId("67cbcd5d57283efc873ae005"),
+                "id": ObjectId("67cbcd5d57283efc873ae005"),
+                "item_name": "Whopper",
                 "restaurant": "Burger King",
                 "food_category": "Burgers",
                 "calories": 550,
@@ -69,7 +74,8 @@ class TestMealAlgorithm(unittest.TestCase):
                 "fats": 25
             },
             {
-                "_id": ObjectId("67cbcd5d57283efc873ae006"),
+                "id": ObjectId("67cbcd5d57283efc873ae006"),
+                "item_name": "Medium Fries",
                 "restaurant": "Burger King",
                 "food_category": "Fried Potatoes",
                 "calories": 320,
@@ -82,7 +88,8 @@ class TestMealAlgorithm(unittest.TestCase):
         # Items from excluded categories
         self.excluded_items = [
             {
-                "_id": ObjectId("67cbcd5d57283efc873ae007"),
+                "id": ObjectId("67cbcd5d57283efc873ae007"),
+                "item_name": "Coca Cola",
                 "restaurant": "McDonald's",
                 "food_category": "Beverages",
                 "calories": 150,
@@ -91,7 +98,8 @@ class TestMealAlgorithm(unittest.TestCase):
                 "fats": 0
             },
             {
-                "_id": ObjectId("67cbcd5d57283efc873ae008"),
+                "id": ObjectId("67cbcd5d57283efc873ae008"),
+                "item_name": "Ketchup",
                 "restaurant": "Burger King",
                 "food_category": "Toppings & Ingredients",
                 "calories": 50,
@@ -123,19 +131,19 @@ class TestMealAlgorithm(unittest.TestCase):
         self.assertTrue(len(valid_meals) > 0, "Should generate at least one valid meal")
         
         # Check that each meal has items from only one restaurant
-        for meal in valid_meals:
+        for meal_option in valid_meals:
             # Get the restaurant for this meal
-            restaurant = meal.get("restaurant")
+            restaurant = meal_option["meal"]["restaurant"]
             
             # Function to check if an item belongs to this restaurant
             def check_item_restaurant(item_id):
                 for item in self.all_items:
-                    if str(item["_id"]) == item_id:
+                    if str(item["id"]) == item_id:
                         return item["restaurant"] == restaurant
                 return False
             
             # Check each food item in the meal
-            for item_id in meal["food_item_ids"]:
+            for item_id in meal_option["meal"]["food_item_ids"]:
                 self.assertTrue(check_item_restaurant(item_id), 
                                f"Item {item_id} should be from restaurant {restaurant}")
     
@@ -157,15 +165,15 @@ class TestMealAlgorithm(unittest.TestCase):
         valid_meals = check_meal_options(calorie_limit, protein_limit, carb_limit, fat_limit)
         
         # Check that all meals are within limits
-        for meal in valid_meals:
-            macros = meal["macros"]
-            self.assertLessEqual(macros["calories"], calorie_limit, 
+        for meal_option in valid_meals:
+            meal = meal_option["meal"]
+            self.assertLessEqual(meal["calories"], calorie_limit, 
                                 "Calories should be under the limit")
-            self.assertLessEqual(macros["protein"], protein_limit, 
+            self.assertLessEqual(meal["protein"], protein_limit, 
                                 "Protein should be under the limit")
-            self.assertLessEqual(macros["carbs"], carb_limit, 
+            self.assertLessEqual(meal["carbs"], carb_limit, 
                                 "Carbs should be under the limit")
-            self.assertLessEqual(macros["fats"], fat_limit, 
+            self.assertLessEqual(meal["fats"], fat_limit, 
                                 "Fats should be under the limit")
     
     @patch('script.get_db_connection')
@@ -179,20 +187,30 @@ class TestMealAlgorithm(unittest.TestCase):
         # Run the function
         valid_meals = check_meal_options(1000, 50, 100, 50)
         
-        # Check composition of each meal
-        for meal in valid_meals:
-            # Check that meal has 0-2 entrees
-            self.assertLessEqual(len(meal["entrees"]), 2, "Meal should have at most 2 entrees")
+        # For each meal, count the number of items in each category
+        for meal_option in valid_meals:
+            meal = meal_option["meal"]
+            food_items = []
             
-            # Check that meal has 0-2 sides
-            self.assertLessEqual(len(meal["sides"]), 2, "Meal should have at most 2 sides")
+            # Get all food items in this meal
+            for item_id in meal["food_item_ids"]:
+                for item in self.all_items:
+                    if str(item["id"]) == item_id:
+                        food_items.append(item)
+                        break
             
-            # Check that meal has 0-1 desserts
-            self.assertLessEqual(len(meal["desserts"]), 1, "Meal should have at most 1 dessert")
+            # Count items by category
+            entrees = [item for item in food_items if item["food_category"] in ["Sandwiches", "Entrees", "Pizza", "Burgers"]]
+            sides = [item for item in food_items if item["food_category"] in ["Fried Potatoes", "Appetizers & Sides", "Salads", "Soup", "Baked Goods"]]
+            desserts = [item for item in food_items if item["food_category"] == "Desserts"]
+            
+            # Check constraints
+            self.assertLessEqual(len(entrees), 2, "Meal should have at most 2 entrees")
+            self.assertLessEqual(len(sides), 2, "Meal should have at most 2 sides")
+            self.assertLessEqual(len(desserts), 1, "Meal should have at most 1 dessert")
             
             # Check that meal has at least one item
-            total_items = len(meal["entrees"]) + len(meal["sides"]) + len(meal["desserts"])
-            self.assertGreater(total_items, 0, "Meal should have at least one item")
+            self.assertGreater(len(food_items), 0, "Meal should have at least one item")
     
     @patch('script.get_db_connection')
     def test_excluded_categories(self, mock_get_db):
@@ -208,12 +226,14 @@ class TestMealAlgorithm(unittest.TestCase):
         # Check that no meal includes items from excluded categories
         excluded_categories = ["Beverages", "Toppings & Ingredients"]
         
-        for meal in valid_meals:
+        for meal_option in valid_meals:
+            meal = meal_option["meal"]
+            
             # Check all items in the meal
             for item_id in meal["food_item_ids"]:
                 # Find the corresponding item in our test data
                 for item in self.all_items:
-                    if str(item["_id"]) == item_id:
+                    if str(item["id"]) == item_id:
                         self.assertNotIn(item["food_category"], excluded_categories,
                                         f"Category {item['food_category']} should be excluded")
 
@@ -275,6 +295,84 @@ def print_meal_permutations():
                     print(f"  Desserts: {desserts_str}")
                     print(f"  Macros: {macros['calories']} cal, {macros['protein']}g protein, "
                           f"{macros['carbs']}g carbs, {macros['fats']}g fats")
+
+def print_meal_permutations():
+    """Run the algorithm with test data and print the valid meal permutations"""
+    print("\n=== VALID MEAL PERMUTATIONS ===\n")
+    
+    # Create test instance to access test data
+    test_instance = TestMealAlgorithm()
+    test_instance.setUp()
+    
+    # Mock the database connection
+    mock_collection = MagicMock()
+    mock_collection.find.return_value = test_instance.all_items
+    
+    # Set test limits
+    calorie_limit = 1000
+    protein_limit = 50
+    carb_limit = 100
+    fat_limit = 50
+    
+    print(f"Using limits: Calories={calorie_limit}, Protein={protein_limit}g, Carbs={carb_limit}g, Fats={fat_limit}g\n")
+    
+    # Use patch as context manager to mock the database
+    with patch('script.get_db_connection', return_value=mock_collection):
+        # Run the function
+        valid_meals = check_meal_options(calorie_limit, protein_limit, carb_limit, fat_limit)
+        
+        # Print results
+        if not valid_meals:
+            print("No valid meal permutations found with the given constraints.")
+        else:
+            print(f"Found {len(valid_meals)} valid meal permutations:\n")
+            
+            # Group meals by restaurant for easier reading
+            meals_by_restaurant = {}
+            for meal_option in valid_meals:
+                restaurant = meal_option["meal"]["restaurant"]
+                if restaurant not in meals_by_restaurant:
+                    meals_by_restaurant[restaurant] = []
+                meals_by_restaurant[restaurant].append(meal_option)
+            
+            # Print meals grouped by restaurant
+            for restaurant, meal_options in meals_by_restaurant.items():
+                print(f"\n=== {restaurant} ({len(meal_options)} meals) ===")
+                
+                for i, meal_option in enumerate(meal_options, 1):
+                    meal = meal_option["meal"]
+                    
+                    # Get food item details
+                    food_items = []
+                    for item_id in meal["food_item_ids"]:
+                        for item in test_instance.all_items:
+                            if str(item["id"]) == item_id:
+                                food_items.append(item)
+                                break
+                    
+                    # Group items by category
+                    entrees = [item for item in food_items if item["food_category"] in ["Sandwiches", "Entrees", "Pizza", "Burgers"]]
+                    sides = [item for item in food_items if item["food_category"] in ["Fried Potatoes", "Appetizers & Sides", "Salads", "Soup", "Baked Goods"]]
+                    desserts = [item for item in food_items if item["food_category"] == "Desserts"]
+                    
+                    # Format meal details
+                    entrees_str = ", ".join([item["item_name"] for item in entrees]) if entrees else "None"
+                    sides_str = ", ".join([item["item_name"] for item in sides]) if sides else "None"
+                    desserts_str = ", ".join([item["item_name"] for item in desserts]) if desserts else "None"
+                    
+                    # Print formatted meal information
+                    print(f"\nMeal #{i}:")
+                    print(f"  Entrees: {entrees_str}")
+                    print(f"  Sides: {sides_str}")
+                    print(f"  Desserts: {desserts_str}")
+                    print(f"  Macros: {meal['calories']} cal, {meal['protein']}g protein, "
+                          f"{meal['carbs']}g carbs, {meal['fats']}g fats")
+                    print(f"  Food Item IDs: {', '.join(meal['food_item_ids'])}")
+                    
+                    # Print the actual output format that will be returned by the API
+                    if i == 1:  # Only show the exact format for the first meal
+                        print("\n  API Output Format:")
+                        print(json.dumps(meal_option, indent=2))
 
 
 if __name__ == "__main__":

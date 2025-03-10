@@ -31,10 +31,6 @@ const UserProfile = () => {
       <TouchableOpacity onPress={() => navigation.navigate("SavedMeals")}>
         <Text style={styles.menuItem}>Saved Meals</Text>
       </TouchableOpacity>
-      {/* navigate to settings screen once its made*/}
-      <TouchableOpacity onPress={() => alert("Navigating to Settings...")}>
-        <Text style={styles.menuItem}>Settings</Text>
-      </TouchableOpacity>
       {/* actaully logout the user once auth implemented*/}
       <TouchableOpacity onPress={() => navigation.navigate("Login")}>
         <Text style={[styles.menuItem, styles.logout]}>Log Out</Text>
@@ -53,6 +49,7 @@ const styles = StyleSheet.create({
     position: "absolute",
     top: 50,
     left: 20,
+    zIndex: 10,
   },
   profileIcon: {
     marginBottom: 30,

@@ -1,24 +1,14 @@
 import React, { useState, useRef } from "react";
 import {
   View,
-  TextInput,
   StyleSheet,
-  Vibration,
   TouchableOpacity,
   Text,
   Dimensions,
-  Animated,
 } from "react-native";
-import { useNavigation } from "@react-navigation/native";
-import { IdealMenuItem } from "../Internal";
 import { LinearGradient } from "@tamagui/linear-gradient";
 import { YStack, Card } from "tamagui";
 import { useFonts, Poppins_400Regular } from "@expo-google-fonts/poppins";
-import {
-  GestureHandlerRootView,
-  PanGestureHandler,
-  State,
-} from "react-native-gesture-handler";
 import { Ionicons } from "@expo/vector-icons";
 
 const SavedMeals = () => {
@@ -32,7 +22,12 @@ const SavedMeals = () => {
         end={[1, 1]}
         style={styles.background}
       />
-
+      <TouchableOpacity
+        style={styles.backButton}
+        onPress={() => navigation.goBack()}
+      >
+        <Ionicons name="arrow-back" size={30} color="white" />
+      </TouchableOpacity>
       <Text style={styles.header}>Saved Meals</Text>
       <Card
         elevate
@@ -134,6 +129,12 @@ const styles = StyleSheet.create({
     position: "absolute",
     top: 10,
     right: 10,
+  },
+  backButton: {
+    position: "absolute",
+    top: 50,
+    left: 20,
+    zIndex: 10,
   },
 });
 

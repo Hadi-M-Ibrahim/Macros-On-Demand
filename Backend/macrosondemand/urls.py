@@ -1,3 +1,4 @@
+# Backend/macrosondemand/urls.py
 """
 URL configuration for macrosondemand project.
 
@@ -17,6 +18,7 @@ Including another URLconf
 from django.contrib import admin
 from django.urls import include, path
 from django.shortcuts import redirect
+from apps.search.views import meal_options_view, save_meal_view
 
 def home_redirect(request):
     return redirect('/api/auth/signup/')  # Redirect to the sign-in page
@@ -25,4 +27,6 @@ urlpatterns = [
     path('', home_redirect, name='home-redirect'),  # Root URL redirects to sign-in
     path('admin/', admin.site.urls),
     path('api/auth/', include('apps.accounts.urls')),
+    path('api/search/meal-options/', meal_options_view, name='meal-options'),
+    path('api/search/save-meal/', save_meal_view, name='save-meal'),
 ]

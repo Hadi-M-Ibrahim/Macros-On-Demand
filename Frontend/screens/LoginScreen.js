@@ -1,19 +1,59 @@
 import React, { useState } from "react";
-import { StyleSheet, TouchableOpacity, View } from "react-native";
+import {
+  StyleSheet,
+  TouchableOpacity,
+  View,
+  ActivityIndicator,
+} from "react-native";
 import { Button, Input, Stack, Text, YStack, Card } from "tamagui";
 import { LinearGradient } from "@tamagui/linear-gradient";
 import { useFonts, Poppins_400Regular } from "@expo-google-fonts/poppins";
+import AsyncStorage from "@react-native-async-storage/async-storage";
+import api from "../services/api"; // Import the API service
 
 const LoginScreen = ({ navigation }) => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [error, setError] = useState("");
+  const [isLoading, setIsLoading] = useState(false);
 
   const [fontsLoaded] = useFonts({
     Poppins_400Regular,
   });
 
+  if (!fontsLoaded) {
+    return <ActivityIndicator size="large" color="#0000ff" />;
+  }
+
   const onLogin = async () => {
-    console.log("To be implemented");
+    if (!email || !password) {
+      setError("Email and password are required");
+      return;
+    }
+
+    setError("");
+    setIsLoading(true);
+
+    try {
+      const data = await api.auth.login({
+        email: email,
+        password: password,
+      });
+
+      // Store tokens
+      await AsyncStorage.setItem("accessToken", data.access);
+      await AsyncStorage.setItem("refreshToken", data.refresh);
+
+      // Store user info if needed
+      await AsyncStorage.setItem("userData", JSON.stringify(data.user));
+
+      // Navigate to the inputs screen
+      navigation.navigate("Inputs");
+    } catch (error) {
+      setError(error.message || "Login failed. Please check your credentials.");
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   const onContinueAsGuest = () => {
@@ -21,14 +61,7 @@ const LoginScreen = ({ navigation }) => {
   };
 
   return (
-    <View
-      style={{
-        flex: 1,
-        justifyContent: "center",
-        alignItems: "center",
-        backgroundColor: "pink",
-      }}
-    >
+    <View style={styles.container}>
       <LinearGradient
         colors={["#4A2040", "#9F6BA0"]}
         start={[0, 0]}
@@ -65,10 +98,12 @@ const LoginScreen = ({ navigation }) => {
             Macros On Demand
           </Text>
 
+          {error ? <Text style={styles.errorText}>{error}</Text> : null}
+
           <Stack width="100%">
             <Text fontFamily="Poppins_400Regular">Email</Text>
             <Input
-              placeholder="Enter your email: "
+              placeholder="Enter your email"
               value={email}
               onChangeText={setEmail}
               padding="$2"
@@ -78,31 +113,37 @@ const LoginScreen = ({ navigation }) => {
           <Stack width="100%">
             <Text fontFamily="Poppins_400Regular">Password</Text>
             <Input
-              placeholder="Enter your password: "
+              placeholder="Enter your password"
               value={password}
               onChangeText={setPassword}
               secureTextEntry
               padding="$2"
             />
           </Stack>
+
           <TouchableOpacity
             style={styles.button}
             activeOpacity={0.7}
             onPress={onLogin}
+            disabled={isLoading}
           >
-            <Text
-              color="white"
-              fontWeight="bold"
-              fontFamily="Poppins_400Regular"
-            >
-              Login
-            </Text>
+            {isLoading ? (
+              <ActivityIndicator color="white" />
+            ) : (
+              <Text
+                color="white"
+                fontWeight="bold"
+                fontFamily="Poppins_400Regular"
+              >
+                Login
+              </Text>
+            )}
           </TouchableOpacity>
 
           <TouchableOpacity
             style={styles.button2}
             activeOpacity={0.7}
-            onPress={() => navigation.navigate("Inputs")}
+            onPress={onContinueAsGuest}
           >
             <Text
               style={{
@@ -114,6 +155,7 @@ const LoginScreen = ({ navigation }) => {
               Continue as Guest
             </Text>
           </TouchableOpacity>
+
           <Button
             style={{
               backgroundColor: "transparent",
@@ -160,6 +202,12 @@ const styles = StyleSheet.create({
     borderRadius: 16,
     marginTop: 0,
     alignItems: "center",
+  },
+  errorText: {
+    color: "red",
+    fontFamily: "Poppins_400Regular",
+    textAlign: "center",
+    marginBottom: 10,
   },
 });
 

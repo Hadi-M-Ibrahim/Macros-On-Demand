@@ -1,5 +1,11 @@
 import React, { useState } from "react";
-import { StyleSheet, TouchableOpacity, View, Alert } from "react-native";
+import {
+  StyleSheet,
+  TouchableOpacity,
+  View,
+  Alert,
+  ActivityIndicator,
+} from "react-native";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { Button, Input, Stack, Text, YStack, Card } from "tamagui";
 import { LinearGradient } from "@tamagui/linear-gradient";
@@ -15,7 +21,12 @@ const SignUpScreen = ({ navigation }) => {
     Poppins_400Regular,
   });
 
-  // valid8 email using regex
+  // loading indicator until fonts load
+  if (!fontsLoaded) {
+    return <ActivityIndicator size="large" color="#0000ff" />;
+  }
+
+  // valid8 email with regex
   const validateEmail = (email) => {
     const regex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     return regex.test(email);
@@ -26,12 +37,10 @@ const SignUpScreen = ({ navigation }) => {
       setError("Please enter a valid email address.");
       return;
     }
-    // password and confirm password need to be ==
     if (password !== confirmPassword) {
       setError("Passwords do not match.");
       return;
     }
-    // clear previous errors
     setError("");
 
     try {
@@ -42,6 +51,7 @@ const SignUpScreen = ({ navigation }) => {
           headers: {
             "Content-Type": "application/json",
           },
+          // payload keys must match backend expectation
           body: JSON.stringify({
             email: email,
             password: password,
@@ -51,7 +61,6 @@ const SignUpScreen = ({ navigation }) => {
       );
 
       console.log("Response status:", response.status);
-
       const data = await response.json();
       console.log("Response data:", data);
 
@@ -65,111 +74,39 @@ const SignUpScreen = ({ navigation }) => {
         setError(data.error || "Signup failed. Please try again.");
       }
     } catch (err) {
-      console.error(err);
+      console.error("Signup error:", err);
       setError("An error occurred. Please try again later.");
     }
   };
 
   return (
     <View style={styles.container}>
-      <LinearGradient
-        colors={["#4A2040", "#9F6BA0"]}
-        start={[0, 0]}
-        end={[1, 1]}
-        style={styles.background}
+      <Text style={{ fontFamily: "Poppins_400Regular", fontSize: 24 }}>
+        Create Account
+      </Text>
+      {error ? <Text style={styles.errorText}>{error}</Text> : null}
+      <Input placeholder="Email" value={email} onChangeText={setEmail} />
+      <Input
+        placeholder="Password"
+        value={password}
+        secureTextEntry
+        onChangeText={setPassword}
       />
-      <Card
-        elevate
-        size="$4"
-        bordered
-        padding="$6"
-        width={"80%"}
-        backgroundColor="white"
-        borderWidth={0}
-        shadowColor="rgba(0, 0, 0, 0.1)"
-        shadowOffset={{ width: 5, height: 10 }}
-        shadowOpacity={0.3}
-        shadowRadius={6}
-      >
-        <YStack
-          space="$4"
-          padding="$4"
-          borderRadius="$4"
-          backgroundColor="$color2"
-          alignItems="center"
-        >
-          <Text
-            fontSize="$8"
-            fontWeight="bold"
-            color="#4A2040"
-            textAlign="center"
-            fontFamily="Poppins_400Regular"
-          >
-            Create Account
-          </Text>
-
-          {error ? <Text style={styles.errorText}>{error}</Text> : null}
-
-          <Stack width="100%">
-            <Text fontFamily="Poppins_400Regular">Email</Text>
-            <Input
-              placeholder="Enter your email"
-              value={email}
-              onChangeText={setEmail}
-              padding="$2"
-              autoCapitalize="none"
-            />
-          </Stack>
-
-          <Stack width="100%">
-            <Text fontFamily="Poppins_400Regular">Password</Text>
-            <Input
-              placeholder="Enter your password"
-              value={password}
-              onChangeText={setPassword}
-              secureTextEntry
-              padding="$2"
-            />
-          </Stack>
-
-          <Stack width="100%">
-            <Text fontFamily="Poppins_400Regular">Confirm Password</Text>
-            <Input
-              placeholder="Confirm your password"
-              value={confirmPassword}
-              onChangeText={setConfirmPassword}
-              secureTextEntry
-              padding="$2"
-            />
-          </Stack>
-
-          <TouchableOpacity
-            style={styles.button}
-            activeOpacity={0.7}
-            onPress={onSignUp}
-          >
-            <Text
-              color="white"
-              fontWeight="bold"
-              fontFamily="Poppins_400Regular"
-            >
-              Sign Up
-            </Text>
-          </TouchableOpacity>
-
-          <Button
-            style={{ backgroundColor: "transparent", alignSelf: "center" }}
-            onPress={() => navigation.navigate("Login")}
-          >
-            <Text style={{ color: "black", textAlign: "center" }}>
-              Already have an account?{" "}
-              <Text style={{ color: "#0000FF", textAlign: "center" }}>
-                Login
-              </Text>
-            </Text>
-          </Button>
-        </YStack>
-      </Card>
+      <Input
+        placeholder="Confirm Password"
+        value={confirmPassword}
+        secureTextEntry
+        onChangeText={setConfirmPassword}
+      />
+      <TouchableOpacity style={styles.button} onPress={onSignUp}>
+        <Text style={{ color: "white" }}>Sign Up</Text>
+      </TouchableOpacity>
+      <TouchableOpacity onPress={() => navigation.navigate("Login")}>
+        <Text>
+          Already have an account?{" "}
+          <Text style={{ fontWeight: "bold" }}>Login</Text>
+        </Text>
+      </TouchableOpacity>
     </View>
   );
 };
@@ -180,11 +117,7 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     alignItems: "center",
     backgroundColor: "pink",
-  },
-  background: {
-    position: "absolute",
-    width: "100%",
-    height: "100%",
+    padding: 16,
   },
   button: {
     backgroundColor: "#9F6BA0",

@@ -19,7 +19,7 @@ from django.urls import include, path
 from django.shortcuts import redirect
 
 def home_redirect(request):
-    return redirect('/api/auth/signin/')  # Redirect to the sign-in page
+    return redirect('/api/auth/signup/')  # Redirect to the sign-in page
 
 urlpatterns = [
     path('', home_redirect, name='home-redirect'),  # Root URL redirects to sign-in

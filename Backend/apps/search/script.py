@@ -42,13 +42,14 @@ def check_meal_options(calorie_limit, protein_limit, carb_limit, fat_limit):
     
     # Query all food items - including restaurant info
     all_items = list(collection.find({}, {
+        "id": 1,
+        "item_name": 1,
         "food_category": 1, 
         "restaurant": 1, 
         "calories": 1, 
         "protein": 1, 
         "carbohydrates": 1, 
-        "fats": 1,
-        "_id": 1
+        "fats": 1
     }))
     
     # Filter out beverage and toppings/ingredients categories
@@ -109,19 +110,19 @@ def check_meal_options(calorie_limit, protein_limit, carb_limit, fat_limit):
                                 total_carbs <= carb_limit and 
                                 total_fats <= fat_limit):
                                 
-                                # Create meal object (all items are already from the same restaurant)
+                                # Create meal object in the requested format
+                                food_item_ids = [str(item.get("id")) for item in entree_combo + side_combo + dessert_combo]
+                                
                                 meal = {
-                                    "restaurant": restaurant_name,
-                                    "entrees": [{"id": str(item.get("_id")), "category": item.get("food_category")} for item in entree_combo],
-                                    "sides": [{"id": str(item.get("_id")), "category": item.get("food_category")} for item in side_combo],
-                                    "desserts": [{"id": str(item.get("_id")), "category": item.get("food_category")} for item in dessert_combo],
-                                    "macros": {
+                                    "message": "Meal option generated successfully.",
+                                    "meal": {
+                                        "restaurant": restaurant_name,
                                         "calories": total_calories,
                                         "protein": total_protein,
                                         "carbs": total_carbs,
-                                        "fats": total_fats
-                                    },
-                                    "food_item_ids": [str(item.get("_id")) for item in entree_combo + side_combo + dessert_combo]
+                                        "fats": total_fats,
+                                        "food_item_ids": food_item_ids
+                                    }
                                 }
                                 
                                 valid_meals.append(meal)

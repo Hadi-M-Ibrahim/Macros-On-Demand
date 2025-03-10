@@ -30,8 +30,7 @@ DEBUG = True
 
 
 # allowed hosts
-ALLOWED_HOSTS = os.getenv('DJANGO_ALLOWED_HOSTS', 'localhost,127.0.0.1').split(',')
-
+ALLOWED_HOSTS = [host.strip() for host in config('DJANGO_ALLOWED_HOSTS', default='localhost,127.0.0.1').split(',')]
 
 # Application definition
 
@@ -174,3 +173,8 @@ SIMPLE_JWT = {
     'ROTATE_REFRESH_TOKENS': False,
     'BLACKLIST_AFTER_ROTATION': False,
 }
+
+CORS_ALLOWED_ORIGINS = [
+    "http://localhost:19006",  # Expo Go or Local Dev
+    "http://34.82.71.163",     # Deployed Backend
+]

@@ -49,6 +49,7 @@ const styles = StyleSheet.create({
     position: "absolute",
     top: 50,
     left: 20,
+    zIndex: 10,
   },
   profileIcon: {
     marginBottom: 30,

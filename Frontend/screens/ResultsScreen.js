@@ -75,6 +75,12 @@ const ResultsScreen = ({ navigation }) => {
         end={[1, 1]}
         style={StyleSheet.absoluteFill}
       />
+      <TouchableOpacity
+        style={styles.backButton}
+        onPress={() => navigation.goBack()}
+      >
+        <Ionicons name="arrow-back" size={30} color="white" />
+      </TouchableOpacity>
       <GestureHandlerRootView style={styles.container}>
         <PanGestureHandler
           onGestureEvent={handleSwipe}
@@ -82,7 +88,19 @@ const ResultsScreen = ({ navigation }) => {
         >
           <Animated.View style={[styles.box, { transform: [{ translateX }] }]}>
             {/* <Text style={styles.text}>{foodRecommendations[index]}</Text> */}
-            <Text style={styles.text}>{foodRec + "\n\n" + restaurantStr + "\n\n" + caloriesStr + "\n\n" + proteinStr + "\n\n" + carbStr + "\n\n" + fatStr}</Text>
+            <Text style={styles.text}>
+              {foodRec +
+                "\n\n" +
+                restaurantStr +
+                "\n\n" +
+                caloriesStr +
+                "\n\n" +
+                proteinStr +
+                "\n\n" +
+                carbStr +
+                "\n\n" +
+                fatStr}
+            </Text>
           </Animated.View>
         </PanGestureHandler>
       </GestureHandlerRootView>
@@ -129,6 +147,12 @@ const styles = StyleSheet.create({
     position: "absolute",
     top: 10,
     right: 10,
+  },
+  backButton: {
+    position: "absolute",
+    top: 50,
+    left: 20,
+    zIndex: 10,
   },
 });
 

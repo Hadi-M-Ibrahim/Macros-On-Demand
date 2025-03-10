@@ -21,8 +21,7 @@ import {
 } from "react-native-gesture-handler";
 import { Ionicons } from "@expo/vector-icons";
 
-
-const SavedMealsScreen = () => {
+const SavedMeals = () => {
   useFonts({ Poppins_400Regular });
 
   return (
@@ -34,7 +33,7 @@ const SavedMealsScreen = () => {
         style={styles.background}
       />
 
-         <Text style={styles.header}>Saved Meals</Text>
+      <Text style={styles.header}>Saved Meals</Text>
       <Card
         elevate
         size="$4"
@@ -54,14 +53,13 @@ const SavedMealsScreen = () => {
           borderRadius="$4"
           backgroundColor="$color2"
           alignItems="center"
-        >
-        </YStack>
+        ></YStack>
         <Text>Item 1:</Text>
       </Card>
-        <TouchableOpacity
+      <TouchableOpacity
         style={styles.iconContainer}
         onPress={() => navigation.navigate("UserProfile")}
-        ></TouchableOpacity>
+      ></TouchableOpacity>
     </View>
   );
 };
@@ -111,7 +109,7 @@ const styles = StyleSheet.create({
     fontFamily: "Poppins_400Regular",
     color: "white",
   },
-   box: {
+  box: {
     backgroundColor: "#ddd",
     padding: 20,
     borderRadius: 10,
@@ -139,4 +137,4 @@ const styles = StyleSheet.create({
   },
 });
 
-export default SavedMealsScreen;
+export default SavedMeals;

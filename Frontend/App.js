@@ -10,6 +10,7 @@ import LoginScreen from "./screens/LoginScreen";
 import InputScreen from "./screens/InputScreen";
 import ResultsScreen from "./screens/ResultsScreen";
 import UserProfile from "./screens/UserProfileScreen";
+import SavedMeals from "./screens/SavedMealsScreen";
 import { useFonts, Poppins_400Regular } from "@expo-google-fonts/poppins";
 import * as Font from "expo-font";
 
@@ -55,6 +56,11 @@ const App = () => {
             <Stack.Screen
               name="UserProfile"
               component={UserProfile}
+              options={{ headerShown: false }}
+            />
+            <Stack.Screen
+              name="SavedMeals"
+              component={SavedMeals}
               options={{ headerShown: false }}
             />
           </Stack.Navigator>

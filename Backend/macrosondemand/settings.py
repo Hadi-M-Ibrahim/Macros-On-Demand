@@ -30,8 +30,7 @@ DEBUG = True
 
 
 # allowed hosts
-ALLOWED_HOSTS = os.getenv('DJANGO_ALLOWED_HOSTS', 'localhost,127.0.0.1').split(',')
-
+ALLOWED_HOSTS = [host.strip() for host in config('DJANGO_ALLOWED_HOSTS', default='localhost,127.0.0.1').split(',')]
 
 # Application definition
 

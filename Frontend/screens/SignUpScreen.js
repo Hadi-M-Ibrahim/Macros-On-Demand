@@ -35,7 +35,6 @@ const SignUpScreen = ({ navigation }) => {
     setError("");
 
     try {
-      // POST request to signup endpoint.
       const response = await fetch("http://127.0.0.1:8000/api/auth/signup/", {
         method: "POST",
         headers: {
@@ -48,22 +47,17 @@ const SignUpScreen = ({ navigation }) => {
         }),
       });
 
-      // Log response status for debugging
       console.log("Response status:", response.status);
 
       const data = await response.json();
-      // Log response data for debugging
       console.log("Response data:", data);
 
       if (response.ok) {
-        // store tokens using AsyncStorage
         await AsyncStorage.setItem("accessToken", data.access);
         await AsyncStorage.setItem("refreshToken", data.refresh);
         Alert.alert("Success", "Account created successfully.");
-        // navigate to InputScreen after a successful signup
         navigation.navigate("InputScreen");
       } else {
-        // display any backend error
         console.error("Backend error:", data);
         setError(data.error || "Signup failed. Please try again.");
       }

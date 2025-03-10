@@ -32,6 +32,10 @@ const App = () => {
         <NavigationContainer>
           <Stack.Navigator
             initialRouteName={isFirstLaunch ? "SignUp" : "Login"}
+            screenOptions={{
+          headerShown: false,
+          cardStyle: { flex: 1 },
+        }} 
           >
             <Stack.Screen
               name="SignUp"

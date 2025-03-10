@@ -35,17 +35,20 @@ const SignUpScreen = ({ navigation }) => {
     setError("");
 
     try {
-      const response = await fetch("http://127.0.0.1:8000/api/auth/signup/", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          email: email,
-          password: password,
-          confirm_password: confirmPassword,
-        }),
-      });
+      const response = await fetch(
+        "http://34.82.71.163:8000/api/auth/signup/",
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            email: email,
+            password: password,
+            confirm_password: confirmPassword,
+          }),
+        }
+      );
 
       console.log("Response status:", response.status);
 

@@ -173,3 +173,8 @@ SIMPLE_JWT = {
     'ROTATE_REFRESH_TOKENS': False,
     'BLACKLIST_AFTER_ROTATION': False,
 }
+
+CORS_ALLOWED_ORIGINS = [
+    "http://localhost:19006",  # Expo Go or Local Dev
+    "http://34.82.71.163",     # Deployed Backend
+]

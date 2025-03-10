@@ -13,6 +13,7 @@ https://docs.djangoproject.com/en/5.1/ref/settings/
 from pathlib import Path
 from decouple import config
 from datetime import timedelta
+import os
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -27,6 +28,9 @@ SECRET_KEY = 'django-insecure-(x2@u3gx6kmmtj2#jvi3yvk%)+0)(o=#kn@kt3(-+5o+w*4%%a
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
+
+# allowed hosts
+ALLOWED_HOSTS = os.getenv('DJANGO_ALLOWED_HOSTS', 'localhost,127.0.0.1').split(',')
 
 
 # Application definition
@@ -82,9 +86,6 @@ WSGI_APPLICATION = 'macrosondemand.wsgi.application'
 # Database
 # https://docs.djangoproject.com/en/5.1/ref/settings/#databases
 
-
-
-
 DATABASES = {
     'default': {
         'ENGINE': 'djongo',
@@ -136,8 +137,6 @@ STATIC_URL = 'static/'
 # Default primary key field type
 # https://docs.djangoproject.com/en/5.1/ref/settings/#default-auto-field
 
-#DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
-
 LOGGING = {
     'version': 1,
     'disable_existing_loggers': False,
@@ -151,7 +150,6 @@ LOGGING = {
             'handlers': ['console'],
             'level': 'DEBUG',
         },
-        # Optionally, set the root logger to debug:
         '': {
             'handlers': ['console'],
             'level': 'DEBUG',
@@ -176,5 +174,3 @@ SIMPLE_JWT = {
     'ROTATE_REFRESH_TOKENS': False,
     'BLACKLIST_AFTER_ROTATION': False,
 }
-
-

@@ -120,7 +120,7 @@ const InputScreen = () => {
           calories: parseInt(calories),
           protein: parseInt(protein),
           carbs: parseInt(carbs),
-          fats: parseInt(fat),
+          fats: parseInt(fats),
         })
       );
 

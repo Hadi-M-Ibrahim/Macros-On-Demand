@@ -63,7 +63,7 @@ const SignUpScreen = ({ navigation }) => {
       // Store tokens
       await AsyncStorage.setItem("accessToken", data.access);
       await AsyncStorage.setItem("refreshToken", data.refresh);
-
+      
       //TEMP FOR DEBUGGING
       const token = await AsyncStorage.getItem("accessToken");
       console.log("Access Token:", token);

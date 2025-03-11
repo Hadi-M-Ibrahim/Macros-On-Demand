@@ -29,4 +29,5 @@ urlpatterns = [
     path('api/auth/', include('apps.accounts.urls')),
     path('api/search/meal-options/', meal_options_view, name='meal-options'),
     path('api/search/save-meal/', save_meal_view, name='save-meal'),
+    path('api/search/ranked-meals/', ranked_meal_options_view, name='ranked-meals'),
 ]

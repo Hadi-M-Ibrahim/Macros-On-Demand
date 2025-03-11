@@ -18,7 +18,7 @@ Including another URLconf
 from django.contrib import admin
 from django.urls import include, path
 from django.shortcuts import redirect
-from apps.search.views import meal_options_view, save_meal_view
+from apps.search.views import meal_options_view, save_meal_view, ranked_meal_options_view
 
 def home_redirect(request):
     return redirect('/api/auth/signup/')  # Redirect to the sign-in page

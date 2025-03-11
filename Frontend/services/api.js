@@ -76,6 +76,42 @@ const api = {
       }
     },
 
+    // check if an email exists
+    checkEmailExists: async (email) => {
+      try {
+        // use the signup endpoint and catch the error
+        // just is a workaround since we don't have a dedicated endpoint
+        const response = await fetch(`${API_BASE_URL}/auth/signup/`, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            email: email,
+            password: "TemporaryPassword123", // This won't be used
+            confirm_password: "TemporaryPassword123",
+          }),
+        });
+
+        const data = await response.json();
+
+        // If we get a 400 with "User already exists" message
+        if (
+          response.status === 400 &&
+          data.error &&
+          data.error.includes("User already exists")
+        ) {
+          return { exists: true };
+        }
+
+        return { exists: false };
+      } catch (error) {
+        console.error("Email check error:", error);
+        // Default to false on error
+        return { exists: false };
+      }
+    },
+
     // Login user
     login: async (credentials) => {
       try {
@@ -89,6 +125,20 @@ const api = {
         return handleResponse(response);
       } catch (error) {
         console.error("Login error:", error);
+        throw error;
+      }
+    },
+
+    // logout user - clear tokens
+    logout: async () => {
+      try {
+        // we don't have a server-side logout endpoint, so just clear local storage
+        await AsyncStorage.removeItem("accessToken");
+        await AsyncStorage.removeItem("refreshToken");
+        await AsyncStorage.removeItem("userData");
+        return { success: true };
+      } catch (error) {
+        console.error("Logout error:", error);
         throw error;
       }
     },
@@ -186,7 +236,7 @@ const api = {
       }
     },
 
-    // gget saved meals
+    // get saved meals
     getSavedMeals: async () => {
       try {
         const headers = await getAuthHeaders();
@@ -197,6 +247,33 @@ const api = {
         return handleResponse(response);
       } catch (error) {
         console.error("Get saved meals error:", error);
+        throw error;
+      }
+    },
+
+    // delete a saved meal
+    deleteMeal: async (mealId) => {
+      try {
+        const headers = await getAuthHeaders();
+        // this endpoint doesn't exist yet - we need to implement it on the backend
+        const response = await fetch(
+          `${API_BASE_URL}/auth/saved-meals/${mealId}/`,
+          {
+            method: "DELETE",
+            headers,
+          }
+        );
+
+        // if endpoint doesn't exist handle the 404 gracefully
+        if (response.status === 404) {
+          return {
+            message: "Delete functionality not implemented on the server yet",
+          };
+        }
+
+        return handleResponse(response);
+      } catch (error) {
+        console.error("Delete meal error:", error);
         throw error;
       }
     },

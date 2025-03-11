@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import {
   StyleSheet,
   TouchableOpacity,
@@ -11,8 +11,9 @@ import { useFonts, Poppins_400Regular } from "@expo-google-fonts/poppins";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import api from "../services/api"; // Import the API service
 
-const LoginScreen = ({ navigation }) => {
-  const [email, setEmail] = useState("");
+const LoginScreen = ({ navigation, route }) => {
+  // have email with prefilled value from the route params if available
+  const [email, setEmail] = useState(route?.params?.prefillEmail || "");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
   const [isLoading, setIsLoading] = useState(false);

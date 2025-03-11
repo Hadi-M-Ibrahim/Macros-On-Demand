@@ -76,6 +76,30 @@ const api = {
       }
     },
 
+    // check if email exists
+    checkEmailExists: async (email) => {
+      try {
+        const response = await fetch(`${API_BASE_URL}/auth/check-email/`, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({ email }),
+        });
+
+        // If response is 200 email doesn't exist
+        // If response is 400 email exists
+        const data = await response.json();
+        return {
+          exists: response.status === 400,
+          message: data.message,
+        };
+      } catch (error) {
+        console.error("Email check error:", error);
+        return { exists: false, message: "Error checking email" }; // Assume email dont exist if the check fails
+      }
+    },
+
     // Login user
     login: async (credentials) => {
       try {
@@ -170,6 +194,31 @@ const api = {
       }
     },
 
+    // get ranked meal options
+    getRankedMealOptions: async (macroGoals) => {
+      try {
+        const queryParams = new URLSearchParams({
+          calories: macroGoals.calories || "",
+          protein: macroGoals.protein || "",
+          carbs: macroGoals.carbs || "",
+          fats: macroGoals.fats || "",
+        }).toString();
+
+        const headers = await getAuthHeaders();
+        const response = await fetch(
+          `${API_BASE_URL}/search/ranked-meals/?${queryParams}`,
+          {
+            method: "GET",
+            headers,
+          }
+        );
+        return handleResponse(response);
+      } catch (error) {
+        console.error("Get ranked meal options error:", error);
+        throw error;
+      }
+    },
+
     // save meal
     saveMeal: async (mealData) => {
       try {
@@ -186,7 +235,7 @@ const api = {
       }
     },
 
-    // gget saved meals
+    // get saved meals
     getSavedMeals: async () => {
       try {
         const headers = await getAuthHeaders();
@@ -200,7 +249,8 @@ const api = {
         throw error;
       }
     },
-    //deleting a meal
+
+    // deleting a meal
     deleteMeal: async (mealId) => {
       try {
         const headers = await getAuthHeaders();

@@ -56,10 +56,6 @@ const LoginScreen = ({ navigation }) => {
     }
   };
 
-  const onContinueAsGuest = () => {
-    navigation.navigate("Inputs");
-  };
-
   return (
     <View style={styles.container}>
       <LinearGradient
@@ -140,26 +136,11 @@ const LoginScreen = ({ navigation }) => {
             )}
           </TouchableOpacity>
 
-          <TouchableOpacity
-            style={styles.button2}
-            activeOpacity={0.7}
-            onPress={onContinueAsGuest}
-          >
-            <Text
-              style={{
-                color: "white",
-                fontWeight: "bold",
-                fontFamily: "Poppins_400Regular",
-              }}
-            >
-              Continue as Guest
-            </Text>
-          </TouchableOpacity>
-
           <Button
             style={{
               backgroundColor: "transparent",
               alignSelf: "center",
+              marginTop: 10,
             }}
             onPress={() => navigation.navigate("SignUp")}
           >
@@ -193,14 +174,6 @@ const styles = StyleSheet.create({
     width: "100%",
     borderRadius: 16,
     marginTop: 16,
-    alignItems: "center",
-  },
-  button2: {
-    backgroundColor: "#4A2040",
-    padding: 16,
-    width: "100%",
-    borderRadius: 16,
-    marginTop: 0,
     alignItems: "center",
   },
   errorText: {

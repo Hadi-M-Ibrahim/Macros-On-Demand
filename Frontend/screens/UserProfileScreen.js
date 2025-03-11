@@ -49,8 +49,10 @@ const UserProfile = () => {
 
   const logout = async () => {
     try {
-      // Clear all storage
-      await AsyncStorage.clear();
+      // clear only authentication related storage
+      await AsyncStorage.removeItem("accessToken");
+      await AsyncStorage.removeItem("refreshToken");
+      await AsyncStorage.removeItem("userData");
 
       // Navigate to login screen
       navigation.reset({

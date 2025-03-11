@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 import {
   StyleSheet,
   TouchableOpacity,
@@ -18,105 +18,20 @@ const SignUpScreen = ({ navigation }) => {
   const [confirmPassword, setConfirmPassword] = useState("");
   const [error, setError] = useState("");
   const [isLoading, setIsLoading] = useState(false);
-  const [isCheckingEmail, setIsCheckingEmail] = useState(false);
-  const [emailTimer, setEmailTimer] = useState(null);
 
   const [fontsLoaded] = useFonts({
     Poppins_400Regular,
   });
 
-  // Clean up timer on unmount
-  useEffect(() => {
-    return () => {
-      if (emailTimer) clearTimeout(emailTimer);
-    };
-  }, [emailTimer]);
-
-  // Handle email change with debouncing
-  const handleEmailChange = (value) => {
-    setEmail(value);
-
-    // Clear previous timer
-    if (emailTimer) clearTimeout(emailTimer);
-
-    // Skip validation if email is too short
-    if (!value || value.length < 5) return;
-
-    // Set a new timer to check email
-    const timer = setTimeout(() => {
-      if (validateEmail(value)) {
-        checkEmailExists(value);
-      }
-    }, 800); // Delay of 800ms
-
-    setEmailTimer(timer);
-  };
-
-  // Loading indicator until fonts load
+  // loading indicator until fonts load
   if (!fontsLoaded) {
     return <ActivityIndicator size="large" color="#0000ff" />;
   }
 
-  // Validate email with regex
+  // valid8 email with regex
   const validateEmail = (email) => {
     const regex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     return regex.test(email);
-  };
-
-  // check if email already exists
-  const checkEmailExists = async (emailToCheck) => {
-    try {
-      setIsCheckingEmail(true);
-
-      // we'll use the signup endpoint with a try/catch to see if the email exists
-      const response = await fetch(
-        `http://34.82.71.163:8000/api/auth/signup/`,
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          // using a placeholder password that wont matter since we're just checking if email exists
-          body: JSON.stringify({
-            email: emailToCheck,
-            password: "CheckingEmailOnly",
-            confirm_password: "CheckingEmailOnly",
-          }),
-        }
-      );
-
-      const data = await response.json();
-
-      // if  backend responds with "User already exists' show the redirect option
-      if (
-        response.status === 400 &&
-        data.error &&
-        data.error.includes("User already exists")
-      ) {
-        Alert.alert(
-          "Account Exists",
-          "An account with this email already exists. Would you like to log in?",
-          [
-            {
-              text: "Cancel",
-              style: "cancel",
-            },
-            {
-              text: "Log In",
-              onPress: () => {
-                // Navigate to login screen and pre-fill email
-                navigation.navigate("Login", { prefillEmail: emailToCheck });
-              },
-            },
-          ]
-        );
-      }
-    } catch (error) {
-      // dont show any error for this check just log it
-      console.log("Email check error:", error);
-    } finally {
-      setIsCheckingEmail(false);
-    }
   };
 
   const onSignUp = async () => {
@@ -129,7 +44,7 @@ const SignUpScreen = ({ navigation }) => {
       return;
     }
     if (password.length < 8) {
-      // 8 char is recommended minimum as per https://pages.nist.gov/800-63-3/sp800-63b.html#sec5
+      //8 char is reccomended minimum as per https://pages.nist.gov/800-63-3/sp800-63b.html#sec5
       setError("Password must be at least 8 characters long.");
       return;
     }
@@ -152,27 +67,7 @@ const SignUpScreen = ({ navigation }) => {
       Alert.alert("Success", "Account created successfully.");
       navigation.navigate("Inputs"); // Navigate to input screen after successful signup
     } catch (error) {
-      if (error.message && error.message.includes("User already exists")) {
-        Alert.alert(
-          "Account Exists",
-          "An account with this email already exists. Would you like to log in?",
-          [
-            {
-              text: "Cancel",
-              style: "cancel",
-            },
-            {
-              text: "Log In",
-              onPress: () => {
-                // Navigate to login screen and pre-fill email
-                navigation.navigate("Login", { prefillEmail: email });
-              },
-            },
-          ]
-        );
-      } else {
-        setError(error.message || "Signup failed. Please try again.");
-      }
+      setError(error.message || "Signup failed. Please try again.");
     } finally {
       setIsLoading(false);
     }
@@ -220,21 +115,12 @@ const SignUpScreen = ({ navigation }) => {
 
           <Stack width="100%">
             <Text fontFamily="Poppins_400Regular">Email</Text>
-            <View style={styles.inputContainer}>
-              <Input
-                placeholder="Enter your email"
-                value={email}
-                onChangeText={handleEmailChange}
-                padding="$2"
-              />
-              {isCheckingEmail && (
-                <ActivityIndicator
-                  size="small"
-                  color="#9F6BA0"
-                  style={styles.inputIndicator}
-                />
-              )}
-            </View>
+            <Input
+              placeholder="Enter your email"
+              value={email}
+              onChangeText={setEmail}
+              padding="$2"
+            />
           </Stack>
 
           <Stack width="100%">
@@ -263,7 +149,6 @@ const SignUpScreen = ({ navigation }) => {
             style={styles.button}
             onPress={onSignUp}
             disabled={isLoading}
-            activeOpacity={0.7}
           >
             {isLoading ? (
               <ActivityIndicator color="white" />
@@ -303,16 +188,6 @@ const styles = StyleSheet.create({
     width: "100%",
     height: "100%",
   },
-  inputContainer: {
-    position: "relative",
-    width: "100%",
-  },
-  inputIndicator: {
-    position: "absolute",
-    right: 10,
-    top: "50%",
-    transform: [{ translateY: -10 }],
-  },
   button: {
     backgroundColor: "#9F6BA0",
     padding: 16,
@@ -324,7 +199,6 @@ const styles = StyleSheet.create({
   buttonText: {
     fontFamily: "Poppins_400Regular",
     color: "white",
-    fontWeight: "bold",
   },
   errorText: {
     color: "red",

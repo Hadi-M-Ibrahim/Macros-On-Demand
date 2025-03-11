@@ -57,12 +57,16 @@ const UserProfile = () => {
       await AsyncStorage.removeItem("userData");
 
       console.log("Tokens removed, navigating to Login screen");
+      // Navigate to login screen - try a simpler navigation approach
+      navigation.navigate("Login");
 
-      // Use a more direct navigation method
-      navigation.reset({
-        index: 0,
-        routes: [{ name: "Login" }],
-      });
+      // If the above doesn't work, try this alternative
+      // setTimeout(() => {
+      //   navigation.reset({
+      //     index: 0,
+      //     routes: [{ name: "Login" }],
+      //   });
+      // }, 100);
     } catch (error) {
       console.error("Logout error:", error);
       Alert.alert("Error", "Failed to log out. Please try again.");
@@ -71,7 +75,7 @@ const UserProfile = () => {
 
   const confirmLogout = () => {
     console.log("Confirm logout pressed");
-    // Show confirmation dialog
+    // Force an alert to verify Alert is working
     Alert.alert(
       "Log Out",
       "Are you sure you want to log out?",
@@ -157,7 +161,6 @@ const UserProfile = () => {
         <TouchableOpacity
           style={styles.menuItem}
           onPress={() => navigation.navigate("Inputs")}
-          activeOpacity={0.7}
         >
           <Ionicons
             name="calculator-outline"
@@ -171,7 +174,6 @@ const UserProfile = () => {
         <TouchableOpacity
           style={styles.menuItem}
           onPress={() => navigation.navigate("SavedMeals")}
-          activeOpacity={0.7}
         >
           <Ionicons
             name="bookmark-outline"
@@ -188,7 +190,7 @@ const UserProfile = () => {
             console.log("Logout button pressed");
             confirmLogout();
           }}
-          activeOpacity={0.5}
+          activeOpacity={0.7}
         >
           <Ionicons
             name="log-out-outline"

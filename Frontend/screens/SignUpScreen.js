@@ -151,10 +151,21 @@ const SignUpScreen = ({ navigation }) => {
           alignItems="center"
         >
           <Text
+            fontSize="$8"
+            fontWeight="bold"
+            color="#4A2040"
+            textAlign="center"
+            fontFamily="Poppins_400Regular"
+          >
+            Macros On Demand
+          </Text>
+
+          <Text
             style={{
               fontFamily: "Poppins_400Regular",
               fontSize: 24,
               color: "#4A2040",
+              marginTop: 10,
             }}
           >
             Create Account

@@ -2,7 +2,8 @@ from django.urls import path
 from rest_framework_simplejwt.views import TokenRefreshView
 from .views import (
     RegistrationView, LoginView, MacroPreferencesView,
-    UserDetailView, SaveMealView, SavedMealsView, DeleteMealView
+    UserDetailView, SaveMealView, SavedMealsView, DeleteMealView,
+    CheckEmailView
 )
 
 urlpatterns = [
@@ -14,6 +15,7 @@ urlpatterns = [
     path('saved-meals/', SavedMealsView.as_view(), name='saved-meals'),
     path('delete-meal/<int:meal_id>/', DeleteMealView.as_view(), name='delete_meal'),
     path('token/refresh/', TokenRefreshView.as_view(), name='token_refresh'),
+    path('check-email/', CheckEmailView.as_view(), name='check-email'),
 ]
 
 
@@ -73,7 +75,27 @@ Response (example):
 Description: Authenticates the user and returns JWT tokens along with basic user info.
 Note: Save the access token for subsequent authenticated requests.
 
-3. Refresh Token Endpoint
+3. Check Email Endpoint
+-----------------------
+URL:        POST /api/auth/check-email/
+Headers:    Content-Type: application/json
+Payload:
+{
+  "email": "user@example.com"
+}
+Response (if exists):
+{
+  "exists": true,
+  "message": "User already exists."
+}
+Response (if available):
+{
+  "exists": false,
+  "message": "Email is available."
+}
+Description: Checks if an email address already exists in the system without attempting registration.
+
+4. Refresh Token Endpoint
 --------------------------
 URL:        POST /api/auth/token/refresh/
 Headers:    Content-Type: application/json
@@ -87,7 +109,7 @@ Response (example):
 }
 Description: Uses the provided refresh token to generate a new access token.
 
-4. Macro Preferences Endpoint
+5. Macro Preferences Endpoint
 ------------------------------
 GET Macro Preferences:
 URL:        GET /api/auth/preferences/
@@ -121,7 +143,7 @@ Response (example):
 }
 Description: Updates the macro preferences and returns the updated values.
 
-5. User Detail Endpoint
+6. User Detail Endpoint
 ------------------------
 URL:        GET /api/auth/user/
 Headers:    Authorization: Bearer <ACCESS_TOKEN>
@@ -153,7 +175,7 @@ Response (example):
 }
 Description: Returns the authenticated user's information, including email, macro preferences, and a list of saved meals (each saved meal includes meal details and the stored food_item_ids).
 
-6. Save Meal Endpoint
+7. Save Meal Endpoint
 ----------------------
 URL:        POST /api/auth/save-meal/
 Headers:    Authorization: Bearer <ACCESS_TOKEN>, Content-Type: application/json
@@ -187,7 +209,7 @@ Response (example):
 }
 Description: Creates a new Meal record and a SavedMeal record linking the meal to the user; stores the provided food_item_ids.
 
-7. Saved Meals Endpoint
+8. Saved Meals Endpoint
 ------------------------
 URL:        GET /api/auth/saved-meals/
 Headers:    Authorization: Bearer <ACCESS_TOKEN>
@@ -206,7 +228,7 @@ Response (example):
     "food_items": [
       {
         "id": "67cbcd5d57283efc873ae064",
-        "item_name": "Classic Beef ‘n Cheddar",
+        "item_name": "Classic Beef 'n Cheddar",
         "restaurant": "Arby's",
         "food_category": "Sandwiches",
         "calories": 470.0,
@@ -231,7 +253,7 @@ Description: Returns a list of the current user's saved meals. Each saved meal i
              - The meal details (id, restaurant, calories, protein, carbs, fats)
              - A nested "food_items" array with full details for each FoodItem (fetched by converting the stored food_item_ids to ObjectIds).
 
-8. Delete Meal Endpoint
+9. Delete Meal Endpoint
 -------------------------
 URL:        DELETE /api/auth/delete-meal/<meal_id>/
 Headers:    Authorization: Bearer <ACCESS_TOKEN>

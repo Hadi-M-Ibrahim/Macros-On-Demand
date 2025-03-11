@@ -141,10 +141,24 @@ class DeleteMealView(APIView):
 
         return Response({"message": "Meal deleted successfully"}, status=status.HTTP_200_OK)
 
-
-
-
-
-
-
-
+class CheckEmailView(APIView):
+    """
+    View to check if an email already exists in the system
+    """
+    permission_classes = [permissions.AllowAny]
+    
+    def post(self, request, format=None):
+        email = request.data.get("email")
+        
+        if not email:
+            return Response({"error": "Email is required."}, status=status.HTTP_400_BAD_REQUEST)
+            
+        User = get_user_model()
+        exists = User.objects.filter(email=email).exists()
+        
+        if exists:
+            return Response({"exists": True, "message": "User already exists."}, 
+                           status=status.HTTP_400_BAD_REQUEST)
+        
+        return Response({"exists": False, "message": "Email is available."}, 
+                       status=status.HTTP_200_OK)

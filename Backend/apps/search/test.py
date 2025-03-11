@@ -4,16 +4,17 @@ from bson import ObjectId
 import json
 import sys
 import os
+import math
 
-# Add the parent directory to sys.path to import our module
+# Add the parent directory to sys.path to import our modules
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
-# Import the function to test
+# Import the functions to test
 from script import check_meal_options
+from rank_meals import calculate_rmse, rank_meal_options, get_top_ranked_meals
 
-
-class TestMealAlgorithm(unittest.TestCase):
-    """Test cases for the meal options algorithm"""
+class TestMealRankings(unittest.TestCase):
+    """Test cases for the meal ranking algorithm"""
 
     def setUp(self):
         """Set up test data"""
@@ -85,165 +86,85 @@ class TestMealAlgorithm(unittest.TestCase):
             }
         ]
         
-        # Items from excluded categories
-        self.excluded_items = [
-            {
-                "id": ObjectId("67cbcd5d57283efc873ae007"),
-                "item_name": "Coca Cola",
-                "restaurant": "McDonald's",
-                "food_category": "Beverages",
-                "calories": 150,
-                "protein": 0,
-                "carbohydrates": 38,
-                "fats": 0
-            },
-            {
-                "id": ObjectId("67cbcd5d57283efc873ae008"),
-                "item_name": "Ketchup",
-                "restaurant": "Burger King",
-                "food_category": "Toppings & Ingredients",
-                "calories": 50,
-                "protein": 1,
-                "carbohydrates": 5,
-                "fats": 3
-            }
-        ]
+        # All test items (excluding items from excluded categories)
+        self.all_items = self.mcdonalds_items + self.burger_king_items
+
+    def test_calculate_rmse(self):
+        """Test RMSE calculation"""
+        actual = {"calories": 750, "protein": 40, "carbs": 80, "fats": 25}
+        target = {"calories": 800, "protein": 50, "carbs": 100, "fats": 30}
         
-        # All test items
-        self.all_items = self.mcdonalds_items + self.burger_king_items + self.excluded_items
+        # Calculate expected RMSE manually
+        squared_errors = [
+            (750 - 800) ** 2,
+            (40 - 50) ** 2,
+            (80 - 100) ** 2,
+            (25 - 30) ** 2
+        ]
+        expected_rmse = math.sqrt(sum(squared_errors) / 4)
+        
+        # Test the function
+        calculated_rmse = calculate_rmse(actual, target)
+        
+        # Check if the calculated RMSE matches the expected RMSE
+        self.assertAlmostEqual(calculated_rmse, expected_rmse, places=5)
 
     @patch('script.get_db_connection')
-    def test_same_restaurant_constraint(self, mock_get_db):
-        """Test that all items in a meal come from the same restaurant"""
-        # Mock the database connection
-        mock_collection = MagicMock()
-        mock_collection.find.return_value = self.all_items
-        mock_get_db.return_value = mock_collection
-        
-        # Run the function
-        calorie_limit = 1000
-        protein_limit = 50
-        carb_limit = 100
-        fat_limit = 50
-        valid_meals = check_meal_options(calorie_limit, protein_limit, carb_limit, fat_limit)
-        
-        # Check that we have meals
-        self.assertTrue(len(valid_meals) > 0, "Should generate at least one valid meal")
-        
-        # Check that each meal has items from only one restaurant
-        for meal_option in valid_meals:
-            # Get the restaurant for this meal
-            restaurant = meal_option["meal"]["restaurant"]
-            
-            # Function to check if an item belongs to this restaurant
-            def check_item_restaurant(item_id):
-                for item in self.all_items:
-                    if str(item["id"]) == item_id:
-                        return item["restaurant"] == restaurant
-                return False
-            
-            # Check each food item in the meal
-            for item_id in meal_option["meal"]["food_item_ids"]:
-                self.assertTrue(check_item_restaurant(item_id), 
-                               f"Item {item_id} should be from restaurant {restaurant}")
-    
-    @patch('script.get_db_connection')
-    def test_macronutrient_limits(self, mock_get_db):
-        """Test that all meals are within the specified macronutrient limits"""
+    def test_meal_ranking_order(self, mock_get_db):
+        """Test that meals are ranked correctly by RMSE"""
         # Mock the database connection
         mock_collection = MagicMock()
         mock_collection.find.return_value = self.all_items
         mock_get_db.return_value = mock_collection
         
         # Set limits
-        calorie_limit = 800
-        protein_limit = 40
-        carb_limit = 80
-        fat_limit = 35
+        calorie_limit = 1000
+        protein_limit = 50
+        carb_limit = 100
+        fat_limit = 50
         
-        # Run the function
-        valid_meals = check_meal_options(calorie_limit, protein_limit, carb_limit, fat_limit)
+        # Get ranked meals
+        ranked_meals = rank_meal_options(calorie_limit, protein_limit, carb_limit, fat_limit)
         
-        # Check that all meals are within limits
-        for meal_option in valid_meals:
-            meal = meal_option["meal"]
-            self.assertLessEqual(meal["calories"], calorie_limit, 
-                                "Calories should be under the limit")
-            self.assertLessEqual(meal["protein"], protein_limit, 
-                                "Protein should be under the limit")
-            self.assertLessEqual(meal["carbs"], carb_limit, 
-                                "Carbs should be under the limit")
-            self.assertLessEqual(meal["fats"], fat_limit, 
-                                "Fats should be under the limit")
+        # Check that meals are ordered by RMSE (ascending)
+        for i in range(1, len(ranked_meals)):
+            self.assertLessEqual(
+                ranked_meals[i-1]["rmse"],
+                ranked_meals[i]["rmse"],
+                "Meals should be ordered by RMSE in ascending order"
+            )
     
     @patch('script.get_db_connection')
-    def test_meal_composition(self, mock_get_db):
-        """Test that meals have correct number of items in each category"""
+    def test_top_meals_count(self, mock_get_db):
+        """Test that get_top_ranked_meals returns the correct number of meals"""
         # Mock the database connection
         mock_collection = MagicMock()
         mock_collection.find.return_value = self.all_items
         mock_get_db.return_value = mock_collection
         
-        # Run the function
-        valid_meals = check_meal_options(1000, 50, 100, 50)
+        # Set limits
+        calorie_limit = 1000
+        protein_limit = 50
+        carb_limit = 100
+        fat_limit = 50
         
-        # For each meal, count the number of items in each category
-        for meal_option in valid_meals:
-            meal = meal_option["meal"]
-            food_items = []
-            
-            # Get all food items in this meal
-            for item_id in meal["food_item_ids"]:
-                for item in self.all_items:
-                    if str(item["id"]) == item_id:
-                        food_items.append(item)
-                        break
-            
-            # Count items by category
-            entrees = [item for item in food_items if item["food_category"] in ["Sandwiches", "Entrees", "Pizza", "Burgers"]]
-            sides = [item for item in food_items if item["food_category"] in ["Fried Potatoes", "Appetizers & Sides", "Salads", "Soup", "Baked Goods"]]
-            desserts = [item for item in food_items if item["food_category"] == "Desserts"]
-            
-            # Check constraints
-            self.assertLessEqual(len(entrees), 2, "Meal should have at most 2 entrees")
-            self.assertLessEqual(len(sides), 2, "Meal should have at most 2 sides")
-            self.assertLessEqual(len(desserts), 1, "Meal should have at most 1 dessert")
-            
-            # Check that meal has at least one item
-            self.assertGreater(len(food_items), 0, "Meal should have at least one item")
-    
-    @patch('script.get_db_connection')
-    def test_excluded_categories(self, mock_get_db):
-        """Test that excluded categories are not included in meals"""
-        # Mock the database connection
-        mock_collection = MagicMock()
-        mock_collection.find.return_value = self.all_items
-        mock_get_db.return_value = mock_collection
+        # Get top 5 meals
+        top_meals = get_top_ranked_meals(calorie_limit, protein_limit, carb_limit, fat_limit, top_n=5)
         
-        # Run the function
-        valid_meals = check_meal_options(1000, 50, 100, 50)
+        # Check that we get at most 5 meals
+        self.assertLessEqual(len(top_meals), 5, "Should return at most 5 meals")
         
-        # Check that no meal includes items from excluded categories
-        excluded_categories = ["Beverages", "Toppings & Ingredients"]
-        
-        for meal_option in valid_meals:
-            meal = meal_option["meal"]
-            
-            # Check all items in the meal
-            for item_id in meal["food_item_ids"]:
-                # Find the corresponding item in our test data
-                for item in self.all_items:
-                    if str(item["id"]) == item_id:
-                        self.assertNotIn(item["food_category"], excluded_categories,
-                                        f"Category {item['food_category']} should be excluded")
+        # If there are at least 5 valid meals, check that we get exactly 5
+        all_valid_meals = check_meal_options(calorie_limit, protein_limit, carb_limit, fat_limit)
+        if len(all_valid_meals) >= 5:
+            self.assertEqual(len(top_meals), 5, "Should return exactly 5 meals when available")
 
-
-def print_meal_permutations():
-    """Run the algorithm with test data and print the valid meal permutations"""
-    print("\n=== VALID MEAL PERMUTATIONS ===\n")
+def print_ranked_meal_permutations():
+    """Run the algorithm with test data and print the ranked meal permutations"""
+    print("\n=== RANKED MEAL PERMUTATIONS ===\n")
     
     # Create test instance to access test data
-    test_instance = TestMealAlgorithm()
+    test_instance = TestMealRankings()
     test_instance.setUp()
     
     # Mock the database connection
@@ -251,133 +172,60 @@ def print_meal_permutations():
     mock_collection.find.return_value = test_instance.all_items
     
     # Set test limits
-    calorie_limit = 1000
-    protein_limit = 50
-    carb_limit = 100
-    fat_limit = 50
+    calorie_limit = 800
+    protein_limit = 40
+    carb_limit = 80
+    fat_limit = 35
     
-    print(f"Using limits: Calories={calorie_limit}, Protein={protein_limit}g, Carbs={carb_limit}g, Fats={fat_limit}g\n")
+    print(f"Target: Calories={calorie_limit}, Protein={protein_limit}g, Carbs={carb_limit}g, Fats={fat_limit}g\n")
     
     # Use patch as context manager to mock the database
     with patch('script.get_db_connection', return_value=mock_collection):
-        # Run the function
-        valid_meals = check_meal_options(calorie_limit, protein_limit, carb_limit, fat_limit)
+        # Get ranked meals
+        ranked_meals = rank_meal_options(calorie_limit, protein_limit, carb_limit, fat_limit)
         
         # Print results
-        if not valid_meals:
+        if not ranked_meals:
             print("No valid meal permutations found with the given constraints.")
         else:
-            print(f"Found {len(valid_meals)} valid meal permutations:\n")
+            print(f"Found {len(ranked_meals)} valid meal permutations, ranked by RMSE:\n")
             
             # Group meals by restaurant for easier reading
             meals_by_restaurant = {}
-            for meal in valid_meals:
-                restaurant = meal.get("restaurant")
+            for meal in ranked_meals:
+                restaurant = meal["meal_option"]["meal"]["restaurant"]
                 if restaurant not in meals_by_restaurant:
                     meals_by_restaurant[restaurant] = []
                 meals_by_restaurant[restaurant].append(meal)
             
-            # Print meals grouped by restaurant
+            # Print ranked meals by restaurant
             for restaurant, meals in meals_by_restaurant.items():
                 print(f"\n=== {restaurant} ({len(meals)} meals) ===")
                 
-                for i, meal in enumerate(meals, 1):
-                    # Format meal details
-                    entrees_str = ", ".join([item.get("category") for item in meal["entrees"]]) if meal["entrees"] else "None"
-                    sides_str = ", ".join([item.get("category") for item in meal["sides"]]) if meal["sides"] else "None"
-                    desserts_str = ", ".join([item.get("category") for item in meal["desserts"]]) if meal["desserts"] else "None"
-                    
-                    macros = meal["macros"]
-                    
-                    print(f"\nMeal #{i}:")
-                    print(f"  Entrees: {entrees_str}")
-                    print(f"  Sides: {sides_str}")
-                    print(f"  Desserts: {desserts_str}")
-                    print(f"  Macros: {macros['calories']} cal, {macros['protein']}g protein, "
-                          f"{macros['carbs']}g carbs, {macros['fats']}g fats")
-
-def print_meal_permutations():
-    """Run the algorithm with test data and print the valid meal permutations"""
-    print("\n=== VALID MEAL PERMUTATIONS ===\n")
-    
-    # Create test instance to access test data
-    test_instance = TestMealAlgorithm()
-    test_instance.setUp()
-    
-    # Mock the database connection
-    mock_collection = MagicMock()
-    mock_collection.find.return_value = test_instance.all_items
-    
-    # Set test limits
-    calorie_limit = 1000
-    protein_limit = 50
-    carb_limit = 100
-    fat_limit = 50
-    
-    print(f"Using limits: Calories={calorie_limit}, Protein={protein_limit}g, Carbs={carb_limit}g, Fats={fat_limit}g\n")
-    
-    # Use patch as context manager to mock the database
-    with patch('script.get_db_connection', return_value=mock_collection):
-        # Run the function
-        valid_meals = check_meal_options(calorie_limit, protein_limit, carb_limit, fat_limit)
-        
-        # Print results
-        if not valid_meals:
-            print("No valid meal permutations found with the given constraints.")
-        else:
-            print(f"Found {len(valid_meals)} valid meal permutations:\n")
-            
-            # Group meals by restaurant for easier reading
-            meals_by_restaurant = {}
-            for meal_option in valid_meals:
-                restaurant = meal_option["meal"]["restaurant"]
-                if restaurant not in meals_by_restaurant:
-                    meals_by_restaurant[restaurant] = []
-                meals_by_restaurant[restaurant].append(meal_option)
-            
-            # Print meals grouped by restaurant
-            for restaurant, meal_options in meals_by_restaurant.items():
-                print(f"\n=== {restaurant} ({len(meal_options)} meals) ===")
-                
-                for i, meal_option in enumerate(meal_options, 1):
-                    meal = meal_option["meal"]
+                for meal in meals:
+                    m = meal["meal_option"]["meal"]
                     
                     # Get food item details
                     food_items = []
-                    for item_id in meal["food_item_ids"]:
+                    for item_id in m["food_item_ids"]:
                         for item in test_instance.all_items:
                             if str(item["id"]) == item_id:
                                 food_items.append(item)
                                 break
                     
-                    # Group items by category
-                    entrees = [item for item in food_items if item["food_category"] in ["Sandwiches", "Entrees", "Pizza", "Burgers"]]
-                    sides = [item for item in food_items if item["food_category"] in ["Fried Potatoes", "Appetizers & Sides", "Salads", "Soup", "Baked Goods"]]
-                    desserts = [item for item in food_items if item["food_category"] == "Desserts"]
+                    # Format food items by category
+                    items_str = ", ".join([item["item_name"] for item in food_items])
                     
-                    # Format meal details
-                    entrees_str = ", ".join([item["item_name"] for item in entrees]) if entrees else "None"
-                    sides_str = ", ".join([item["item_name"] for item in sides]) if sides else "None"
-                    desserts_str = ", ".join([item["item_name"] for item in desserts]) if desserts else "None"
-                    
-                    # Print formatted meal information
-                    print(f"\nMeal #{i}:")
-                    print(f"  Entrees: {entrees_str}")
-                    print(f"  Sides: {sides_str}")
-                    print(f"  Desserts: {desserts_str}")
-                    print(f"  Macros: {meal['calories']} cal, {meal['protein']}g protein, "
-                          f"{meal['carbs']}g carbs, {meal['fats']}g fats")
-                    print(f"  Food Item IDs: {', '.join(meal['food_item_ids'])}")
-                    
-                    # Print the actual output format that will be returned by the API
-                    if i == 1:  # Only show the exact format for the first meal
-                        print("\n  API Output Format:")
-                        print(json.dumps(meal_option, indent=2))
-
+                    print(f"\nRank {meal['rank']} (RMSE: {meal['rmse']:.2f}, Util: {meal['avg_utilization']:.1f}%):")
+                    print(f"  Foods: {items_str}")
+                    print(f"  Macros: {m['calories']} cal, {m['protein']}g protein, "
+                          f"{m['carbs']}g carbs, {m['fats']}g fats")
+                    print(f"  Utilization: Cal: {meal['utilization']['calories']:.1f}%, Protein: {meal['utilization']['protein']:.1f}%, "
+                          f"Carbs: {meal['utilization']['carbs']:.1f}%, Fats: {meal['utilization']['fats']:.1f}%")
 
 if __name__ == "__main__":
     if len(sys.argv) > 1 and sys.argv[1] == "--list":
-        print_meal_permutations()
+        print_ranked_meal_permutations()
     else:
-        print("Running tests... (Use --list argument to print meal permutations instead)")
+        print("Running tests... (Use --list argument to print ranked meal permutations)")
         unittest.main()

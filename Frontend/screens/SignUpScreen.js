@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 import {
   StyleSheet,
   TouchableOpacity,
@@ -18,8 +18,6 @@ const SignUpScreen = ({ navigation }) => {
   const [confirmPassword, setConfirmPassword] = useState("");
   const [error, setError] = useState("");
   const [isLoading, setIsLoading] = useState(false);
-  const [isCheckingEmail, setIsCheckingEmail] = useState(false);
-  const [emailExists, setEmailExists] = useState(false);
 
   const [fontsLoaded] = useFonts({
     Poppins_400Regular,
@@ -30,107 +28,28 @@ const SignUpScreen = ({ navigation }) => {
     return <ActivityIndicator size="large" color="#0000ff" />;
   }
 
-  // validate email with regex
+  // valid8 email with regex
   const validateEmail = (email) => {
     const regex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     return regex.test(email);
   };
 
-  // check if email exists with debounce
-  useEffect(() => {
-    setEmailExists(false);
-
-    // doesnt check if email is empty or invalid
-    if (!email || !validateEmail(email)) {
-      return;
-    }
-
-    //  timeout to avoid checking on every keystroke
-    const timeoutId = setTimeout(async () => {
-      setIsCheckingEmail(true);
-      try {
-        // This uses a custom endpoint we'll need to make on the backend
-        // For now, we can simulate this with the signup function that returns an error
-        // when the user already exists
-        await api.auth.register({
-          email: email,
-          password: "temporaryPassword123", // This is just for the check
-          confirm_password: "temporaryPassword123",
-        });
-
-        // If we got here the email doesn't exist
-        setEmailExists(false);
-      } catch (error) {
-        // Check if the error is due to existing user
-        if (error.message && error.message.includes("User already exists")) {
-          setEmailExists(true);
-        }
-      } finally {
-        setIsCheckingEmail(false);
-      }
-    }, 500); //500 ms
-
-    // cleanup the timeout if the component unmounts or email changes
-    return () => clearTimeout(timeoutId);
-  }, [email]);
-
-  // redirect to login page if email exists
-  useEffect(() => {
-    if (emailExists) {
-      // show message briefly before redirecting
-      setError("Email already exists. Redirecting to login...");
-      const redirectTimer = setTimeout(() => {
-        navigation.navigate("Login");
-      }, 1500);
-
-      return () => clearTimeout(redirectTimer);
-    }
-  }, [emailExists, navigation]);
-
   const onSignUp = async () => {
-    // clear previous errors
-    setError("");
-
-    // check if email is valid
     if (!validateEmail(email)) {
       setError("Please enter a valid email address.");
       return;
     }
-
-    // check if email exists (if we haven't already determined this)
-    if (!emailExists && !isCheckingEmail) {
-      try {
-        setIsLoading(true);
-        // attempt to check email existence on signup
-        await api.auth.register({
-          email: email,
-          password: "checkOnly",
-          confirm_password: "checkOnly",
-        });
-      } catch (error) {
-        if (error.message && error.message.includes("User already exists")) {
-          setEmailExists(true);
-          setIsLoading(false);
-          return; //  useEffect handles redirect
-        }
-      } finally {
-        setIsLoading(false);
-      }
-    } else if (emailExists) {
-      // If email exists, we don't need to continue
-      return;
-    }
-
     if (password !== confirmPassword) {
       setError("Passwords do not match.");
       return;
     }
     if (password.length < 8) {
-      // 8 char is recommended minimum as per https://pages.nist.gov/800-63-3/sp800-63b.html#sec5
+      //8 char is reccomended minimum as per https://pages.nist.gov/800-63-3/sp800-63b.html#sec5
       setError("Password must be at least 8 characters long.");
       return;
     }
 
+    setError("");
     setIsLoading(true);
 
     try {
@@ -145,8 +64,9 @@ const SignUpScreen = ({ navigation }) => {
       await AsyncStorage.setItem("accessToken", data.access);
       await AsyncStorage.setItem("refreshToken", data.refresh);
 
-      // Store user info if needed
-      await AsyncStorage.setItem("userData", JSON.stringify(data));
+      //TEMP FOR DEBUGGING
+      const token = await AsyncStorage.getItem("accessToken");
+      console.log("Access Token:", token);
 
       Alert.alert("Success", "Account created successfully.");
       navigation.navigate("Inputs"); // Navigate to input screen after successful signup
@@ -204,18 +124,7 @@ const SignUpScreen = ({ navigation }) => {
               value={email}
               onChangeText={setEmail}
               padding="$2"
-              status={emailExists ? "error" : undefined}
             />
-            {isCheckingEmail && (
-              <Text style={styles.infoText}>
-                Checking email availability...
-              </Text>
-            )}
-            {emailExists && (
-              <Text style={styles.emailExistsText}>
-                Email already exists. Redirecting to login...
-              </Text>
-            )}
           </Stack>
 
           <Stack width="100%">
@@ -243,7 +152,7 @@ const SignUpScreen = ({ navigation }) => {
           <TouchableOpacity
             style={styles.button}
             onPress={onSignUp}
-            disabled={isLoading || isCheckingEmail || emailExists}
+            disabled={isLoading}
           >
             {isLoading ? (
               <ActivityIndicator color="white" />
@@ -300,18 +209,6 @@ const styles = StyleSheet.create({
     fontFamily: "Poppins_400Regular",
     textAlign: "center",
     marginBottom: 10,
-  },
-  emailExistsText: {
-    color: "#4A2040",
-    fontFamily: "Poppins_400Regular",
-    fontSize: 12,
-    marginTop: 4,
-  },
-  infoText: {
-    color: "#888",
-    fontFamily: "Poppins_400Regular",
-    fontSize: 12,
-    marginTop: 4,
   },
 });
 

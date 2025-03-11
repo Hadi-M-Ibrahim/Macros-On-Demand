@@ -44,6 +44,13 @@ const LoginScreen = ({ navigation }) => {
       await AsyncStorage.setItem("accessToken", data.access);
       await AsyncStorage.setItem("refreshToken", data.refresh);
 
+      // TEMP: Retrieve and log the access token for debugging
+      try {
+        const token = await AsyncStorage.getItem("accessToken");
+        console.log("Access Token:", token);
+      } catch (err) {
+        console.error("Error retrieving token:", err);
+      }
       // Store user info if needed
       await AsyncStorage.setItem("userData", JSON.stringify(data.user));
 

@@ -200,6 +200,20 @@ const api = {
         throw error;
       }
     },
+    //deleting a meal
+    deleteMeal: async (mealId) => {
+      try {
+        const headers = await getAuthHeaders();
+        const response = await fetch(`${API_BASE_URL}/auth/delete-meal/${mealId}/`, {
+          method: "DELETE",
+          headers,
+        });
+        return handleResponse(response);
+      } catch (error) {
+        console.error("Delete meal error:", error);
+        throw error;
+      }
+    },
   },
 };
 

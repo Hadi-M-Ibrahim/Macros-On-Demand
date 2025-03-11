@@ -2,7 +2,7 @@ from django.urls import path
 from rest_framework_simplejwt.views import TokenRefreshView
 from .views import (
     RegistrationView, LoginView, MacroPreferencesView,
-    UserDetailView, SaveMealView, SavedMealsView
+    UserDetailView, SaveMealView, SavedMealsView, DeleteMealView
 )
 
 urlpatterns = [
@@ -12,6 +12,7 @@ urlpatterns = [
     path('user/', UserDetailView.as_view(), name='user-detail'),
     path('save-meal/', SaveMealView.as_view(), name='save-meal'),
     path('saved-meals/', SavedMealsView.as_view(), name='saved-meals'),
+    path('delete-meal/<int:meal_id>/', DeleteMealView.as_view(), name='delete_meal'),
     path('token/refresh/', TokenRefreshView.as_view(), name='token_refresh'),
 ]
 
@@ -230,4 +231,14 @@ Description: Returns a list of the current user's saved meals. Each saved meal i
              - The meal details (id, restaurant, calories, protein, carbs, fats)
              - A nested "food_items" array with full details for each FoodItem (fetched by converting the stored food_item_ids to ObjectIds).
 
+8. Delete Meal Endpoint
+-------------------------
+URL:        DELETE /api/auth/delete-meal/<meal_id>/
+Headers:    Authorization: Bearer <ACCESS_TOKEN>
+Payload:    None
+Response (example):
+{
+  "message": "Meal deleted successfully"
+}
+Description: Deletes the saved meal record for the current user and removes the corresponding Meal record from the database completely.  
 """

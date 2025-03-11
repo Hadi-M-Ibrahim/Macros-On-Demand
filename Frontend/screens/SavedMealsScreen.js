@@ -44,11 +44,17 @@ const SavedMeals = ({ navigation }) => {
   }, [navigation]);
 
   const deleteMeal = async (mealId) => {
-    // made a new endpoint for ts
-    Alert.alert(
-      "Not Implemented",
-      "Delete functionality will be added in a future update"
-    );
+    try {
+      await api.meals.deleteMeal(mealId);
+      // Update the state to remove the deleted meal
+      setMeals((prevMeals) =>
+        prevMeals.filter((item) => item.meal.id !== mealId)
+      );
+      Alert.alert("Success", "Meal deleted successfully.");
+    } catch (error) {
+      console.error("Delete meal error:", error);
+      Alert.alert("Error", error.message || "Failed to delete meal.");
+    }
   };
 
   const renderMealItem = ({ item }) => {
@@ -94,6 +100,7 @@ const SavedMeals = ({ navigation }) => {
           <Ionicons name="trash-outline" size={18} color="white" />
           <Text style={styles.deleteButtonText}>Delete</Text>
         </TouchableOpacity>
+
       </Card>
     );
   };

@@ -118,6 +118,28 @@ class SaveMealView(APIView):
         return Response({"message": "Meal saved successfully.", "meal": meal_data},
                         status=status.HTTP_200_OK)
 
+# delete a users meal
+class DeleteMealView(APIView):
+    permission_classes = [permissions.IsAuthenticated]
+
+    def delete(self, request, meal_id, format=None):
+        try:
+            # Get the SavedMeal record for this user and meal id
+            saved_meal = SavedMeal.objects.get(customuser=request.user, meal__id=meal_id)
+        except SavedMeal.DoesNotExist:
+            return Response({"error": "Meal not found or not saved by this user."}, status=status.HTTP_404_NOT_FOUND)
+
+        # Delete the SavedMeal record first
+        saved_meal.delete()
+
+        try:
+            # Then, delete the Meal record from the meals_meal collection
+            meal = Meal.objects.get(id=meal_id)
+            meal.delete()
+        except Meal.DoesNotExist:
+            pass
+
+        return Response({"message": "Meal deleted successfully"}, status=status.HTTP_200_OK)
 
 
 

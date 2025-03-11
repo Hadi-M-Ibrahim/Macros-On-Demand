@@ -28,29 +28,65 @@ const SignUpScreen = ({ navigation }) => {
     return <ActivityIndicator size="large" color="#0000ff" />;
   }
 
-  // valid8 email with regex
+  // validate email with regex
   const validateEmail = (email) => {
     const regex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     return regex.test(email);
   };
 
+  // check if email exists
+  const checkEmailExists = async (email) => {
+    try {
+      const result = await api.auth.checkEmailExists(email);
+      return result.exists;
+    } catch (error) {
+      console.error("Error checking email:", error);
+      return false; // Assume email doesn't exist if check fails
+    }
+  };
+
   const onSignUp = async () => {
+    // Clear previous errors
+    setError("");
+    setIsLoading(true);
+
+    //  check if email is valid
     if (!validateEmail(email)) {
       setError("Please enter a valid email address.");
-      return;
-    }
-    if (password !== confirmPassword) {
-      setError("Passwords do not match.");
-      return;
-    }
-    if (password.length < 8) {
-      //8 char is reccomended minimum as per https://pages.nist.gov/800-63-3/sp800-63b.html#sec5
-      setError("Password must be at least 8 characters long.");
+      setIsLoading(false);
       return;
     }
 
-    setError("");
-    setIsLoading(true);
+    // check if email exists
+    try {
+      const emailExists = await checkEmailExists(email);
+      if (emailExists) {
+        setError("Email already exists. Redirecting to login...");
+        setIsLoading(false);
+
+        // Wait briefly then redirect to login
+        setTimeout(() => {
+          navigation.navigate("Login");
+        }, 1500);
+        return;
+      }
+    } catch (error) {
+      console.error("Error checking email:", error);
+      // Continue with registration attempt even if email check fails
+    }
+
+    if (password !== confirmPassword) {
+      setError("Passwords do not match.");
+      setIsLoading(false);
+      return;
+    }
+
+    if (password.length < 8) {
+      //8 char is reccomended minimum as per https://pages.nist.gov/800-63-3/sp800-63b.html#sec5
+      setError("Password must be at least 8 characters long.");
+      setIsLoading(false);
+      return;
+    }
 
     try {
       // Use our API service
@@ -63,15 +99,24 @@ const SignUpScreen = ({ navigation }) => {
       // Store tokens
       await AsyncStorage.setItem("accessToken", data.access);
       await AsyncStorage.setItem("refreshToken", data.refresh);
-      
-      //TEMP FOR DEBUGGING
-      const token = await AsyncStorage.getItem("accessToken");
-      console.log("Access Token:", token);
+
+      // Store user info if needed
+      await AsyncStorage.setItem("userData", JSON.stringify(data));
 
       Alert.alert("Success", "Account created successfully.");
       navigation.navigate("Inputs"); // Navigate to input screen after successful signup
     } catch (error) {
-      setError(error.message || "Signup failed. Please try again.");
+      // Check if error indicates email already exists
+      if (error.message && error.message.includes("User already exists")) {
+        setError("Email already exists. Redirecting to login...");
+
+        // Wait briefly then redirect to login
+        setTimeout(() => {
+          navigation.navigate("Login");
+        }, 1500);
+      } else {
+        setError(error.message || "Signup failed. Please try again.");
+      }
     } finally {
       setIsLoading(false);
     }

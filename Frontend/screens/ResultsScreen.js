@@ -46,9 +46,10 @@ const ResultsScreen = ({ navigation }) => {
 
         const macroGoals = JSON.parse(macroGoalsString);
 
+
         // Add search endpoint to the backend URLs
         const response = await fetch(
-          `http://34.82.71.163:8000/api/search/meal-options/?calories=${macroGoals.calories}&protein=${macroGoals.protein}&carbs=${macroGoals.carbs}&fats=${macroGoals.fat}`,
+          `http://34.82.71.163:8000/api/search/meal-options/?calories=${macroGoals.calories}&protein=${macroGoals.protein}&carbs=${macroGoals.carbs}&fats=${macroGoals.fats}`,
           {
             method: "GET",
             headers: token

@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import {
   View,
   TextInput,
@@ -6,38 +6,140 @@ import {
   Text,
   Vibration,
   TouchableOpacity,
+  ActivityIndicator,
+  Alert,
 } from "react-native";
 import { useNavigation } from "@react-navigation/native";
-import { IdealMenuItem } from "../Internal";
 import { LinearGradient } from "@tamagui/linear-gradient";
 import { YStack, Card } from "tamagui";
 import { useFonts, Poppins_400Regular } from "@expo-google-fonts/poppins";
+import AsyncStorage from "@react-native-async-storage/async-storage";
+import api from "../services/api"; // Import the API service
 
 const InputScreen = () => {
-  const [calories, setCalories] = useState("0");
-  const [protein, setProtein] = useState("0");
-  const [carbs, setCarbs] = useState("0");
-  const [fat, setFat] = useState("0");
+  const [calories, setCalories] = useState("");
+  const [protein, setProtein] = useState("");
+  const [carbs, setCarbs] = useState("");
+  const [fat, setFat] = useState("");
+  const [isLoading, setIsLoading] = useState(false);
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
   const navigation = useNavigation();
 
   const [fontsLoaded] = useFonts({
     Poppins_400Regular,
   });
 
-  const OnSubmit = () => {
+  // Check if user is logged in
+  useEffect(() => {
+    const checkLoginStatus = async () => {
+      const token = await AsyncStorage.getItem("accessToken");
+      setIsLoggedIn(!!token);
+
+      // If logged in, try to load user's saved preferences
+      if (token) {
+        try {
+          const preferences = await api.macros.getPreferences();
+          if (preferences) {
+            setCalories(
+              preferences.calories_goal
+                ? preferences.calories_goal.toString()
+                : ""
+            );
+            setProtein(
+              preferences.protein_goal
+                ? preferences.protein_goal.toString()
+                : ""
+            );
+            setCarbs(
+              preferences.carbs_goal ? preferences.carbs_goal.toString() : ""
+            );
+            setFat(
+              preferences.fats_goal ? preferences.fats_goal.toString() : ""
+            );
+          }
+        } catch (error) {
+          console.error("Failed to load preferences:", error);
+          // Non-blocking error - just continue with empty fields
+        }
+      }
+    };
+
+    checkLoginStatus();
+  }, []);
+
+  const validateInputs = () => {
+    // Basic validation
+    if (!calories || !protein || !carbs || !fat) {
+      Alert.alert("Missing Information", "Please fill in all fields");
+      return false;
+    }
+
+    // Check if values are numeric and positive
+    if (isNaN(calories) || isNaN(protein) || isNaN(carbs) || isNaN(fat)) {
+      Alert.alert("Invalid Input", "All values must be numbers");
+      return false;
+    }
+
+    if (
+      Number(calories) <= 0 ||
+      Number(protein) <= 0 ||
+      Number(carbs) <= 0 ||
+      Number(fat) <= 0
+    ) {
+      Alert.alert("Invalid Input", "All values must be positive");
+      return false;
+    }
+
+    return true;
+  };
+
+  const onSubmit = async () => {
     Vibration.vibrate();
 
-    const UsersIdealItem = new IdealMenuItem(
-      "IdealMenuItem",
-      "User",
-      calories,
-      protein,
-      carbs,
-      fat
-    );
+    if (!validateInputs()) {
+      return;
+    }
 
-    navigation.navigate("Results");
+    setIsLoading(true);
+
+    try {
+      // If logged in, save preferences
+      if (isLoggedIn) {
+        await api.macros.updatePreferences({
+          calories_goal: parseInt(calories),
+          protein_goal: parseInt(protein),
+          carbs_goal: parseInt(carbs),
+          fats_goal: parseInt(fat),
+        });
+      }
+
+      // Store macro goals for results screen
+      await AsyncStorage.setItem(
+        "macroGoals",
+        JSON.stringify({
+          calories: parseInt(calories),
+          protein: parseInt(protein),
+          carbs: parseInt(carbs),
+          fats: parseInt(fat),
+        })
+      );
+
+      // Navigate to results
+      navigation.navigate("Results");
+    } catch (error) {
+      console.error("Failed to submit:", error);
+      Alert.alert(
+        "Error",
+        "Failed to submit your preferences. Please try again."
+      );
+    } finally {
+      setIsLoading(false);
+    }
   };
+
+  if (!fontsLoaded) {
+    return <ActivityIndicator size="large" color="#0000ff" />;
+  }
 
   return (
     <View style={styles.container}>
@@ -74,6 +176,7 @@ const InputScreen = () => {
             value={calories}
             onChangeText={setCalories}
             keyboardType="numeric"
+            placeholder="Enter target calories"
           />
           <Text style={styles.label}>Protein (g):</Text>
           <TextInput
@@ -81,6 +184,7 @@ const InputScreen = () => {
             value={protein}
             onChangeText={setProtein}
             keyboardType="numeric"
+            placeholder="Enter target protein"
           />
           <Text style={styles.label}>Carbs (g):</Text>
           <TextInput
@@ -88,6 +192,7 @@ const InputScreen = () => {
             value={carbs}
             onChangeText={setCarbs}
             keyboardType="numeric"
+            placeholder="Enter target carbs"
           />
           <Text style={styles.label}>Fat (g):</Text>
           <TextInput
@@ -95,9 +200,18 @@ const InputScreen = () => {
             value={fat}
             onChangeText={setFat}
             keyboardType="numeric"
+            placeholder="Enter target fat"
           />
-          <TouchableOpacity style={styles.button} onPress={OnSubmit}>
-            <Text style={styles.buttonText}>Submit</Text>
+          <TouchableOpacity
+            style={styles.button}
+            onPress={onSubmit}
+            disabled={isLoading}
+          >
+            {isLoading ? (
+              <ActivityIndicator color="white" />
+            ) : (
+              <Text style={styles.buttonText}>Find Meals</Text>
+            )}
           </TouchableOpacity>
         </YStack>
       </Card>
@@ -135,8 +249,10 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     marginBottom: 20,
     paddingHorizontal: 10,
-    backgroundColor: "#a393a3",
-    color: "#1B4332",
+    backgroundColor: "#f5f5f5",
+    color: "#4A2040",
+    width: "100%",
+    borderRadius: 8,
   },
   button: {
     backgroundColor: "#9F6BA0",
@@ -149,6 +265,7 @@ const styles = StyleSheet.create({
   buttonText: {
     fontFamily: "Poppins_400Regular",
     color: "white",
+    fontSize: 16,
   },
 });
 

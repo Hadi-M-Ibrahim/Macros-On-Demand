@@ -8,6 +8,7 @@ import {
   TouchableOpacity,
   ActivityIndicator,
   Alert,
+  ScrollView,
 } from "react-native";
 import { useNavigation } from "@react-navigation/native";
 import { LinearGradient } from "@tamagui/linear-gradient";
@@ -15,6 +16,7 @@ import { YStack, Card } from "tamagui";
 import { useFonts, Poppins_400Regular } from "@expo-google-fonts/poppins";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import api from "../services/api"; // Import the API service
+import { Ionicons } from "@expo/vector-icons";
 
 const InputScreen = () => {
   const [calories, setCalories] = useState("");
@@ -23,6 +25,13 @@ const InputScreen = () => {
   const [fat, setFat] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [isLoggedIn, setIsLoggedIn] = useState(false);
+
+  // Add validation error states
+  const [caloriesError, setCaloriesError] = useState("");
+  const [proteinError, setProteinError] = useState("");
+  const [carbsError, setCarbsError] = useState("");
+  const [fatError, setFatError] = useState("");
+
   const navigation = useNavigation();
 
   const [fontsLoaded] = useFonts({
@@ -67,36 +76,96 @@ const InputScreen = () => {
     checkLoginStatus();
   }, []);
 
-  const validateInputs = () => {
-    // Basic validation
-    if (!calories || !protein || !carbs || !fat) {
-      Alert.alert("Missing Information", "Please fill in all fields");
+  // Validation functions for each field
+  const validateCalories = (value) => {
+    if (!value) {
+      setCaloriesError("Calories are required");
       return false;
     }
-
-    // Check if values are numeric and positive
-    if (isNaN(calories) || isNaN(protein) || isNaN(carbs) || isNaN(fat)) {
-      Alert.alert("Invalid Input", "All values must be numbers");
+    if (isNaN(value) || parseFloat(value) <= 0) {
+      setCaloriesError("Calories must be a positive number");
       return false;
     }
-
-    if (
-      Number(calories) <= 0 ||
-      Number(protein) <= 0 ||
-      Number(carbs) <= 0 ||
-      Number(fat) <= 0
-    ) {
-      Alert.alert("Invalid Input", "All values must be positive");
-      return false;
-    }
-
+    setCaloriesError("");
     return true;
+  };
+
+  const validateProtein = (value) => {
+    if (!value) {
+      setProteinError("Protein is required");
+      return false;
+    }
+    if (isNaN(value) || parseFloat(value) <= 0) {
+      setProteinError("Protein must be a positive number");
+      return false;
+    }
+    setProteinError("");
+    return true;
+  };
+
+  const validateCarbs = (value) => {
+    if (!value) {
+      setCarbsError("Carbs are required");
+      return false;
+    }
+    if (isNaN(value) || parseFloat(value) <= 0) {
+      setCarbsError("Carbs must be a positive number");
+      return false;
+    }
+    setCarbsError("");
+    return true;
+  };
+
+  const validateFat = (value) => {
+    if (!value) {
+      setFatError("Fat is required");
+      return false;
+    }
+    if (isNaN(value) || parseFloat(value) <= 0) {
+      setFatError("Fat must be a positive number");
+      return false;
+    }
+    setFatError("");
+    return true;
+  };
+
+  // Run validation on input change
+  const handleCaloriesChange = (value) => {
+    setCalories(value);
+    validateCalories(value);
+  };
+
+  const handleProteinChange = (value) => {
+    setProtein(value);
+    validateProtein(value);
+  };
+
+  const handleCarbsChange = (value) => {
+    setCarbs(value);
+    validateCarbs(value);
+  };
+
+  const handleFatChange = (value) => {
+    setFat(value);
+    validateFat(value);
+  };
+
+  const validateInputs = () => {
+    // Run all validations
+    const caloriesValid = validateCalories(calories);
+    const proteinValid = validateProtein(protein);
+    const carbsValid = validateCarbs(carbs);
+    const fatValid = validateFat(fat);
+
+    // Return true only if all validations pass
+    return caloriesValid && proteinValid && carbsValid && fatValid;
   };
 
   const onSubmit = async () => {
     Vibration.vibrate();
 
     if (!validateInputs()) {
+      // Scroll to the first error if needed
       return;
     }
 
@@ -142,80 +211,116 @@ const InputScreen = () => {
   }
 
   return (
-    <View style={styles.container}>
-      <LinearGradient
-        colors={["#4A2040", "#9F6BA0"]}
-        start={[0, 0]}
-        end={[1, 1]}
-        style={styles.background}
-      />
-      <Card
-        elevate
-        size="$4"
-        bordered
-        padding="$6"
-        width={"80%"}
-        backgroundColor="white"
-        borderWidth={0}
-        shadowColor="rgba(0, 0, 0, 0.1)"
-        shadowOffset={{ width: 5, height: 10 }}
-        shadowOpacity={0.3}
-        shadowRadius={10}
-      >
-        <YStack
-          space="$4"
-          padding="$4"
-          borderRadius="$4"
-          backgroundColor="$color2"
-          alignItems="center"
+    <ScrollView contentContainerStyle={{ flexGrow: 1 }}>
+      <View style={styles.container}>
+        <LinearGradient
+          colors={["#4A2040", "#9F6BA0"]}
+          start={[0, 0]}
+          end={[1, 1]}
+          style={styles.background}
+        />
+
+        <TouchableOpacity
+          style={styles.backButton}
+          onPress={() => navigation.goBack()}
         >
-          <Text style={styles.title}>Input Ideal Macros</Text>
-          <Text style={styles.label}>Calories:</Text>
-          <TextInput
-            style={styles.input}
-            value={calories}
-            onChangeText={setCalories}
-            keyboardType="numeric"
-            placeholder="Enter target calories"
-          />
-          <Text style={styles.label}>Protein (g):</Text>
-          <TextInput
-            style={styles.input}
-            value={protein}
-            onChangeText={setProtein}
-            keyboardType="numeric"
-            placeholder="Enter target protein"
-          />
-          <Text style={styles.label}>Carbs (g):</Text>
-          <TextInput
-            style={styles.input}
-            value={carbs}
-            onChangeText={setCarbs}
-            keyboardType="numeric"
-            placeholder="Enter target carbs"
-          />
-          <Text style={styles.label}>Fat (g):</Text>
-          <TextInput
-            style={styles.input}
-            value={fat}
-            onChangeText={setFat}
-            keyboardType="numeric"
-            placeholder="Enter target fat"
-          />
-          <TouchableOpacity
-            style={styles.button}
-            onPress={onSubmit}
-            disabled={isLoading}
+          <Ionicons name="arrow-back" size={30} color="white" />
+        </TouchableOpacity>
+
+        <Card
+          elevate
+          size="$4"
+          bordered
+          padding="$6"
+          width={"80%"}
+          backgroundColor="white"
+          borderWidth={0}
+          shadowColor="rgba(0, 0, 0, 0.1)"
+          shadowOffset={{ width: 5, height: 10 }}
+          shadowOpacity={0.3}
+          shadowRadius={10}
+        >
+          <YStack
+            space="$4"
+            padding="$4"
+            borderRadius="$4"
+            backgroundColor="$color2"
+            alignItems="center"
           >
-            {isLoading ? (
-              <ActivityIndicator color="white" />
-            ) : (
-              <Text style={styles.buttonText}>Find Meals</Text>
-            )}
-          </TouchableOpacity>
-        </YStack>
-      </Card>
-    </View>
+            <Text style={styles.title}>Input Ideal Macros</Text>
+
+            <View style={styles.inputContainer}>
+              <Text style={styles.label}>Calories:</Text>
+              <TextInput
+                style={[styles.input, caloriesError ? styles.inputError : null]}
+                value={calories}
+                onChangeText={handleCaloriesChange}
+                keyboardType="numeric"
+                placeholder="Enter target calories"
+              />
+              {caloriesError ? (
+                <Text style={styles.errorText}>{caloriesError}</Text>
+              ) : null}
+            </View>
+
+            <View style={styles.inputContainer}>
+              <Text style={styles.label}>Protein (g):</Text>
+              <TextInput
+                style={[styles.input, proteinError ? styles.inputError : null]}
+                value={protein}
+                onChangeText={handleProteinChange}
+                keyboardType="numeric"
+                placeholder="Enter target protein"
+              />
+              {proteinError ? (
+                <Text style={styles.errorText}>{proteinError}</Text>
+              ) : null}
+            </View>
+
+            <View style={styles.inputContainer}>
+              <Text style={styles.label}>Carbs (g):</Text>
+              <TextInput
+                style={[styles.input, carbsError ? styles.inputError : null]}
+                value={carbs}
+                onChangeText={handleCarbsChange}
+                keyboardType="numeric"
+                placeholder="Enter target carbs"
+              />
+              {carbsError ? (
+                <Text style={styles.errorText}>{carbsError}</Text>
+              ) : null}
+            </View>
+
+            <View style={styles.inputContainer}>
+              <Text style={styles.label}>Fat (g):</Text>
+              <TextInput
+                style={[styles.input, fatError ? styles.inputError : null]}
+                value={fat}
+                onChangeText={handleFatChange}
+                keyboardType="numeric"
+                placeholder="Enter target fat"
+              />
+              {fatError ? (
+                <Text style={styles.errorText}>{fatError}</Text>
+              ) : null}
+            </View>
+
+            <TouchableOpacity
+              style={styles.button}
+              onPress={onSubmit}
+              disabled={isLoading}
+              activeOpacity={0.7}
+            >
+              {isLoading ? (
+                <ActivityIndicator color="white" />
+              ) : (
+                <Text style={styles.buttonText}>Find Meals</Text>
+              )}
+            </TouchableOpacity>
+          </YStack>
+        </Card>
+      </View>
+    </ScrollView>
   );
 };
 
@@ -230,12 +335,22 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     alignItems: "center",
   },
+  backButton: {
+    position: "absolute",
+    top: 50,
+    left: 20,
+    zIndex: 10,
+  },
   title: {
     fontSize: 24,
     fontWeight: "bold",
     color: "#4A2040",
     marginBottom: 20,
     fontFamily: "Poppins_400Regular",
+  },
+  inputContainer: {
+    width: "100%",
+    marginBottom: 10,
   },
   label: {
     color: "#4A2040",
@@ -247,12 +362,22 @@ const styles = StyleSheet.create({
     height: 40,
     borderColor: "#a393a3",
     borderWidth: 1,
-    marginBottom: 20,
+    marginBottom: 5,
     paddingHorizontal: 10,
     backgroundColor: "#f5f5f5",
     color: "#4A2040",
     width: "100%",
     borderRadius: 8,
+  },
+  inputError: {
+    borderColor: "#FF6961",
+    borderWidth: 1.5,
+  },
+  errorText: {
+    color: "#FF6961",
+    fontSize: 12,
+    marginBottom: 10,
+    fontFamily: "Poppins_400Regular",
   },
   button: {
     backgroundColor: "#9F6BA0",

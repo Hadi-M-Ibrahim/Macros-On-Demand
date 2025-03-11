@@ -48,17 +48,25 @@ const UserProfile = () => {
   }, [navigation]);
 
   const logout = async () => {
+    console.log("Logout function called");
     try {
-      // clear only authentication related storage
+      // Clear only authentication-related storage
+      console.log("Removing tokens...");
       await AsyncStorage.removeItem("accessToken");
       await AsyncStorage.removeItem("refreshToken");
       await AsyncStorage.removeItem("userData");
 
-      // Navigate to login screen
-      navigation.reset({
-        index: 0,
-        routes: [{ name: "Login" }],
-      });
+      console.log("Tokens removed, navigating to Login screen");
+      // Navigate to login screen - try a simpler navigation approach
+      navigation.navigate("Login");
+
+      // If the above doesn't work, try this alternative
+      // setTimeout(() => {
+      //   navigation.reset({
+      //     index: 0,
+      //     routes: [{ name: "Login" }],
+      //   });
+      // }, 100);
     } catch (error) {
       console.error("Logout error:", error);
       Alert.alert("Error", "Failed to log out. Please try again.");
@@ -66,10 +74,24 @@ const UserProfile = () => {
   };
 
   const confirmLogout = () => {
-    Alert.alert("Log Out", "Are you sure you want to log out?", [
-      { text: "Cancel", style: "cancel" },
-      { text: "Log Out", onPress: logout, style: "destructive" },
-    ]);
+    console.log("Confirm logout pressed");
+    // Force an alert to verify Alert is working
+    Alert.alert(
+      "Log Out",
+      "Are you sure you want to log out?",
+      [
+        { text: "Cancel", style: "cancel" },
+        {
+          text: "Log Out",
+          onPress: () => {
+            console.log("Logout confirmed");
+            logout();
+          },
+          style: "destructive",
+        },
+      ],
+      { cancelable: false }
+    );
   };
 
   if (isLoading) {
@@ -164,7 +186,11 @@ const UserProfile = () => {
 
         <TouchableOpacity
           style={[styles.menuItem, styles.logoutItem]}
-          onPress={confirmLogout}
+          onPress={() => {
+            console.log("Logout button pressed");
+            confirmLogout();
+          }}
+          activeOpacity={0.7}
         >
           <Ionicons
             name="log-out-outline"

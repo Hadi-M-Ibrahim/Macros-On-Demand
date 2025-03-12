@@ -1,7 +1,7 @@
 # this script ranks the list of valid meal permutations created from script.py
 
 import math
-from .script import check_meal_options
+from script import check_meal_options
 
 def calculate_rmse(actual, target):
     """
@@ -98,16 +98,16 @@ def rank_meal_options(calorie_limit, protein_limit, carb_limit, fat_limit):
 
 def get_top_ranked_meals(calorie_limit, protein_limit, carb_limit, fat_limit, top_n=10):
     """
-    Get the top N ranked meal options.
+    get the top N ranked meal options.
     
-    Args:
-        calorie_limit (int): Maximum calories allowed
-        protein_limit (int): Maximum protein allowed in grams
-        carb_limit (int): Maximum carbohydrates allowed in grams
-        fat_limit (int): Maximum fats allowed in grams
-        top_n (int): Number of top meals to return
+    input:
+        calorie_limit (int): max calories allowed
+        protein_limit (int): max protein allowed in grams
+        carb_limit (int): max carbohydrates allowed in grams
+        fat_limit (int): max fats allowed in grams
+        top_n (int): number of top meals to return
         
-    Returns:
+    output:
         list: Top N ranked meal options
     """
     ranked_meals = rank_meal_options(calorie_limit, protein_limit, carb_limit, fat_limit)
@@ -115,16 +115,16 @@ def get_top_ranked_meals(calorie_limit, protein_limit, carb_limit, fat_limit, to
 
 def get_top_ranked_meals_by_restaurant(calorie_limit, protein_limit, carb_limit, fat_limit, top_n_per_restaurant=3):
     """
-    Get the top N ranked meal options for each restaurant.
+    get the top N ranked meal options for each restaurant.
     
-    Args:
-        calorie_limit (int): Maximum calories allowed
-        protein_limit (int): Maximum protein allowed in grams
-        carb_limit (int): Maximum carbohydrates allowed in grams
-        fat_limit (int): Maximum fats allowed in grams
+    input:
+        calorie_limit (int): max calories allowed
+        protein_limit (int): max protein allowed in grams
+        carb_limit (int): max carbohydrates allowed in grams
+        fat_limit (int): max fats allowed in grams
         top_n_per_restaurant (int): Number of top meals to return per restaurant
         
-    Returns:
+    output:
         dict: Dictionary mapping restaurant names to lists of their top N ranked meal options
     """
     ranked_meals = rank_meal_options(calorie_limit, protein_limit, carb_limit, fat_limit)

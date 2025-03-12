@@ -294,9 +294,14 @@ const ResultsScreen = ({ navigation }) => {
           )}
         </View>
 
-        <Text style={styles.swipeText}>
-          Swipe to see more options ({index + 1}/{mealOptions.length})
-        </Text>
+        <View style={styles.navHelpContainer}>
+          <Text style={styles.swipeText}>
+            Swipe to see more options ({index + 1}/{mealOptions.length})
+          </Text>
+          <Text style={styles.keyboardHelpText}>
+            Tip: Use ← to skip, → to save
+          </Text>
+        </View>
       </>
     );
   };
@@ -334,9 +339,11 @@ const ResultsScreen = ({ navigation }) => {
       <View style={styles.swipeIconContainer}>
         <TouchableOpacity onPress={swipeLeftAction} style={styles.iconButton}>
           <Ionicons name="close-circle-outline" size={50} color="white" />
+          <Text style={styles.iconButtonLabel}>Skip</Text>
         </TouchableOpacity>
         <TouchableOpacity onPress={swipeRightAction} style={styles.iconButton}>
           <Ionicons name="checkmark-circle-outline" size={50} color="white" />
+          <Text style={styles.iconButtonLabel}>Save</Text>
         </TouchableOpacity>
       </View>
 
@@ -371,7 +378,8 @@ const styles = StyleSheet.create({
     padding: 20,
     borderRadius: 16,
     width: width * 0.85,
-    height: height * 0.65,
+    // Reduce the height to make it more compact
+    height: height * 0.6,
     position: "absolute",
     shadowColor: "#000",
     shadowOffset: { width: 3, height: 6 },
@@ -416,20 +424,20 @@ const styles = StyleSheet.create({
   },
   restaurantName: {
     fontFamily: "Poppins_400Regular",
-    fontSize: 22,
+    fontSize: 20, // Reduced from 22
     fontWeight: "bold",
     color: "#4A2040",
-    marginBottom: 20,
+    marginBottom: 15, // Reduced from 20
     textAlign: "center",
   },
   macroContainer: {
     flexDirection: "row",
     justifyContent: "space-between",
     alignItems: "center",
-    marginBottom: 12,
+    marginBottom: 8, // Reduced from 12
     borderBottomWidth: 1,
     borderBottomColor: "#f0f0f0",
-    paddingBottom: 8,
+    paddingBottom: 6, // Reduced from 8
   },
   macroLabel: {
     fontFamily: "Poppins_400Regular",
@@ -443,28 +451,37 @@ const styles = StyleSheet.create({
     fontWeight: "bold",
   },
   foodItemsContainer: {
-    marginTop: 20,
-    marginBottom: 20,
+    marginTop: 15, // Reduced from 20
+    marginBottom: 15, // Reduced from 20
   },
   foodItemsHeader: {
     fontFamily: "Poppins_400Regular",
     fontSize: 16,
     fontWeight: "bold",
     color: "#4A2040",
-    marginBottom: 10,
+    marginBottom: 8, // Reduced from 10
   },
   foodItemText: {
     fontFamily: "Poppins_400Regular",
     fontSize: 14,
     color: "#4A2040",
-    marginBottom: 5,
+    marginBottom: 4, // Reduced from 5
+  },
+  navHelpContainer: {
+    marginTop: 10,
   },
   swipeText: {
     fontFamily: "Poppins_400Regular",
     textAlign: "center",
     fontSize: 14,
     color: "#888",
-    marginTop: 10,
+  },
+  keyboardHelpText: {
+    fontFamily: "Poppins_400Regular",
+    textAlign: "center",
+    fontSize: 12,
+    color: "#888",
+    marginTop: 4,
   },
   iconContainer: {
     position: "absolute",
@@ -489,6 +506,13 @@ const styles = StyleSheet.create({
   },
   iconButton: {
     padding: 10,
+    alignItems: "center",
+  },
+  iconButtonLabel: {
+    fontFamily: "Poppins_400Regular",
+    color: "white",
+    fontSize: 12,
+    marginTop: 4,
   },
 });
 

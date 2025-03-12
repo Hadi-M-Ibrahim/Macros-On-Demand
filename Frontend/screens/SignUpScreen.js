@@ -169,6 +169,8 @@ const SignUpScreen = ({ navigation }) => {
               fontSize: isSmallScreen ? 18 : 24,
               color: "#4A2040",
               marginTop: isSmallScreen ? 5 : 10,
+              // marginBottom: 20,
+              ...(isSmallScreen && { marginBottom: 20 })
             }}
           >
             Create Account
@@ -185,6 +187,7 @@ const SignUpScreen = ({ navigation }) => {
               value={email}
               onChangeText={setEmail}
               padding={isSmallScreen ? "$1" : "$2"}
+              marginBottom={20}
             />
           </Stack>
 
@@ -198,6 +201,7 @@ const SignUpScreen = ({ navigation }) => {
               secureTextEntry
               onChangeText={setPassword}
               padding={isSmallScreen ? "$1" : "$2"}
+              marginBottom={20}
             />
           </Stack>
 
@@ -211,6 +215,7 @@ const SignUpScreen = ({ navigation }) => {
               secureTextEntry
               onChangeText={setConfirmPassword}
               padding={isSmallScreen ? "$1" : "$2"}
+              marginBottom={20}
             />
           </Stack>
 

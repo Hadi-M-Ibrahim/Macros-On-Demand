@@ -7,6 +7,48 @@ import time
 from .script import check_meal_options, save_meal_to_db
 from .rank_meals import rank_meal_options, get_top_ranked_meals, get_top_ranked_meals_by_restaurant
 
+import random
+
+def get_sample_meals(calorie_limit, protein_limit, carb_limit, fat_limit, count=10):
+    """Generate sample meals for testing when real calculation would take too long"""
+    restaurants = ["McDonald's", "Burger King", "Wendy's", "Taco Bell", "KFC"]
+    sample_meals = []
+    
+    for i in range(count):
+        calories = random.randint(int(calorie_limit * 0.7), calorie_limit)
+        protein = random.randint(int(protein_limit * 0.7), protein_limit)
+        carbs = random.randint(int(carb_limit * 0.7), carb_limit)
+        fats = random.randint(int(fat_limit * 0.7), fat_limit)
+        
+        restaurant = random.choice(restaurants)
+        
+        meal = {
+            "message": "Meal option generated successfully.",
+            "meal": {
+                "restaurant": restaurant,
+                "calories": calories,
+                "protein": protein,
+                "carbs": carbs,
+                "fats": fats,
+                "food_item_ids": [f"sample_item_{j}" for j in range(1, random.randint(2, 4))]
+            }
+        }
+        
+        sample_meals.append({
+            "rank": i + 1,
+            "rmse": random.uniform(10, 50),
+            "avg_utilization": random.uniform(70, 95),
+            "utilization": {
+                "calories": (calories / calorie_limit) * 100,
+                "protein": (protein / protein_limit) * 100,
+                "carbs": (carbs / carb_limit) * 100,
+                "fats": (fats / fat_limit) * 100
+            },
+            "meal_option": meal
+        })
+    
+    return sample_meals
+    
 # Create background task for computationally intensive operations
 def process_in_background(func, *args, **kwargs):
     thread = threading.Thread(target=func, args=args, kwargs=kwargs)
@@ -64,6 +106,40 @@ def ranked_meal_options_view(request):
     """
     View function to get ranked meal options based on how close they are to the specified limits
     """
+    try:
+        # Get user-defined macronutrient constraints from query parameters
+        calorie_limit = int(request.GET.get("calories", 800))
+        protein_limit = int(request.GET.get("protein", 50))
+        carb_limit = int(request.GET.get("carbs", 100))
+        fat_limit = int(request.GET.get("fats", 30))
+        
+        # Optional parameters
+        top_n = int(request.GET.get("top_n", 10))
+        by_restaurant = request.GET.get("by_restaurant", "false").lower() == "true"
+        
+        # USE THIS FOR QUICK TESTING
+        sample_meals = get_sample_meals(calorie_limit, protein_limit, carb_limit, fat_limit, top_n)
+        
+        # Format response
+        formatted_result = {
+            "count": len(sample_meals),
+            "duration_seconds": 0.1,
+            "ranked_meals": sample_meals
+        }
+        
+        return JsonResponse(formatted_result)
+        
+    except Exception as e:
+        import traceback
+        traceback.print_exc()
+        return JsonResponse({
+            "error": str(e)
+        }, status=400)
+
+"""def ranked_meal_options_view(request):
+
+   # View function to get ranked meal options based on how close they are to the specified limits
+
     try:
         # get user-defined macronutrient constraints from query parameters
         calorie_limit = int(request.GET.get("calories", 800))
@@ -136,7 +212,7 @@ def ranked_meal_options_view(request):
         return JsonResponse({
             "error": str(e)
         }, status=400)
-
+"""
 @csrf_exempt
 @require_http_methods(["POST"])
 def save_meal_view(request):

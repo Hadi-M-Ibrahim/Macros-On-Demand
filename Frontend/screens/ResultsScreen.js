@@ -321,6 +321,7 @@ const ResultsScreen = ({ navigation }) => {
         <Ionicons name="arrow-back" size={30} color="white" />
       </TouchableOpacity>
 
+      <Text style={styles.appTitle}>Macros On Demand</Text>
       <Text style={styles.headerTitle}>Meal Recommendations</Text>
 
       <GestureHandlerRootView style={styles.container}>
@@ -366,20 +367,29 @@ const styles = StyleSheet.create({
     alignItems: "center",
     overflow: "hidden",
   },
-  headerTitle: {
+  appTitle: {
     fontFamily: "Poppins_400Regular",
-    fontSize: 24,
+    fontSize: 28,
+    fontWeight: "bold",
     color: "white",
     textAlign: "center",
-    marginTop: 60,
+    marginTop: 55,
+  },
+  headerTitle: {
+    fontFamily: "Poppins_400Regular",
+    fontSize: 20,
+    color: "white",
+    textAlign: "center",
+    marginTop: 5,
+    marginBottom: 10,
   },
   box: {
     backgroundColor: "white",
     padding: 20,
     borderRadius: 16,
     width: width * 0.85,
-    // Reduce the height to make it more compact
-    height: height * 0.6,
+    // Adjusted height
+    height: height * 0.55,
     position: "absolute",
     shadowColor: "#000",
     shadowOffset: { width: 3, height: 6 },
@@ -497,7 +507,7 @@ const styles = StyleSheet.create({
   },
   swipeIconContainer: {
     position: "absolute",
-    bottom: 30,
+    bottom: 45, // Increased from 30 to add more space
     left: 0,
     right: 0,
     flexDirection: "row",

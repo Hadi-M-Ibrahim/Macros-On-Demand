@@ -222,6 +222,7 @@ const SignUpScreen = ({ navigation }) => {
             style={[
               styles.button,
               isSmallScreen && { paddingVertical: 8, paddingHorizontal: 12 },
+              (isSmallScreen && { marginBottom: 20 }),
             ]}
             onPress={onSignUp}
             disabled={isLoading}

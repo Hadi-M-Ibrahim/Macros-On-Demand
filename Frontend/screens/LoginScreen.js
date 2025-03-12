@@ -4,6 +4,7 @@ import {
   TouchableOpacity,
   View,
   ActivityIndicator,
+  Dimensions,
 } from "react-native";
 import { Button, Input, Stack, Text, YStack, Card } from "tamagui";
 import { LinearGradient } from "@tamagui/linear-gradient";
@@ -63,6 +64,9 @@ const LoginScreen = ({ navigation }) => {
     }
   };
 
+  const { width, height } = Dimensions.get("window");
+  const isSmallScreen = height < 750; 
+
   return (
     <View style={styles.container}>
       <LinearGradient
@@ -75,8 +79,9 @@ const LoginScreen = ({ navigation }) => {
         elevate
         size="$4"
         bordered
-        padding="$6"
+        padding={isSmallScreen ? "$1" : "$6"}
         width={"80%"}
+        height={isSmallScreen ? height * 0.8 : height * 0.85} 
         backgroundColor="white"
         borderWidth={0}
         shadowColor="rgba(0, 0, 0, 0.1)"
@@ -85,18 +90,19 @@ const LoginScreen = ({ navigation }) => {
         shadowRadius={6}
       >
         <YStack
-          space="$4"
-          padding="$4"
+          space={isSmallScreen ? "$1" : "$4"}
+          padding={isSmallScreen ? "$2" : "$4"}
           borderRadius="$4"
           backgroundColor="$color2"
           alignItems="center"
         >
           <Text
-            fontSize="$8"
+            fontSize={isSmallScreen ? "$6" : "$8"}
             fontWeight="bold"
             color="#4A2040"
             textAlign="center"
             fontFamily="Poppins_400Regular"
+            style={{ ...(isSmallScreen && { marginBottom: 50 }) }}
           >
             Macros On Demand
           </Text>
@@ -104,28 +110,34 @@ const LoginScreen = ({ navigation }) => {
           {error ? <Text style={styles.errorText}>{error}</Text> : null}
 
           <Stack width="100%">
-            <Text fontFamily="Poppins_400Regular">Email</Text>
+            <Text fontSize={isSmallScreen ? 12 : 14} fontFamily="Poppins_400Regular">Email</Text>
             <Input
               placeholder="Enter your email"
               value={email}
               onChangeText={setEmail}
-              padding="$2"
+              padding={isSmallScreen ? "$1" : "$2"}
+              style={{ ...(isSmallScreen && { marginBottom: 20 }) }}
             />
           </Stack>
 
           <Stack width="100%">
-            <Text fontFamily="Poppins_400Regular">Password</Text>
+            <Text fontSize={isSmallScreen ? 12 : 14}  fontFamily="Poppins_400Regular">Password</Text>
             <Input
               placeholder="Enter your password"
               value={password}
               onChangeText={setPassword}
               secureTextEntry
-              padding="$2"
+              padding={isSmallScreen ? "$1" : "$2"}
+              style={{ ...(isSmallScreen && { marginBottom: 20 }) }}
             />
           </Stack>
 
           <TouchableOpacity
-            style={styles.button}
+            style={[
+              styles.button,
+              isSmallScreen && { paddingVertical: 8, paddingHorizontal: 12 },
+              (isSmallScreen && { marginBottom: 100 }),
+            ]}
             activeOpacity={0.7}
             onPress={onLogin}
             disabled={isLoading}
@@ -151,10 +163,22 @@ const LoginScreen = ({ navigation }) => {
             }}
             onPress={() => navigation.navigate("SignUp")}
           >
-            <Text style={{ color: "black", textAlign: "center" }}>
+            <Text
+              style={{
+                color: "black",
+                textAlign: "center",
+                fontSize: isSmallScreen ? 12 : 14,
+              }}
+            >
               Don't have an account?
             </Text>
-            <Text style={{ color: "#0000FF", textAlign: "center" }}>
+            <Text
+              style={{
+                color: "#0000FF",
+                textAlign: "center",
+                fontSize: isSmallScreen ? 14 : 16,
+              }}
+            >
               Sign Up
             </Text>
           </Button>

@@ -43,23 +43,31 @@ const ResultsScreen = ({ navigation }) => {
         }
         const macroGoals = JSON.parse(macroGoalsString);
 
-        const response = await fetch(
-          `http://34.82.71.163:8000/api/search/meal-options/?calories=${macroGoals.calories}&protein=${macroGoals.protein}&carbs=${macroGoals.carbs}&fats=${macroGoals.fats}`,
-          {
-            method: "GET",
-            headers: token
-              ? { Authorization: `Bearer ${token}` }
-              : { "Content-Type": "application/json" },
-          }
+        // use the API service instead of direct fetch
+        const response = await api.meals.getRankedMealOptions(macroGoals);
+
+        // check the response format to see what we received
+        console.log(
+          "API Response:",
+          JSON.stringify(response).substring(0, 200)
         );
 
-        const data = await response.json();
-
-        if (!response.ok) {
-          throw new Error(data.error || "Failed to fetch meal options");
+        // Handle both possible response formats
+        let validMeals = [];
+        if (response.valid_meals) {
+          // original format
+          validMeals = response.valid_meals;
+        } else if (response.ranked_meals) {
+          // Ranked meals format
+          validMeals = response.ranked_meals.map((item) => item.meal);
+        } else if (response.count && Array.isArray(response.ranked_meals)) {
+          // Another possible format for ranked meals
+          validMeals = response.ranked_meals.map((item) => item.meal);
+        } else {
+          throw new Error("Unexpected response format from the server");
         }
 
-        if (!data.valid_meals || data.valid_meals.length === 0) {
+        if (!validMeals || validMeals.length === 0) {
           setError(
             "No meal options found with your criteria. Try adjusting your macro goals."
           );
@@ -67,7 +75,23 @@ const ResultsScreen = ({ navigation }) => {
           return;
         }
 
-        setMealOptions(data.valid_meals);
+        // Transform the meals to ensure they have the expected structure
+        const processedMeals = validMeals.map((meal) => {
+          return {
+            meal: {
+              id: meal.id || Math.random().toString(),
+              restaurant: meal.restaurant || "Unknown Restaurant",
+              calories: meal.calories || 0,
+              protein: meal.protein || 0,
+              carbs: meal.carbs || 0,
+              fats: meal.fats || 0,
+              food_item_ids: meal.food_item_ids || [],
+              item_names: meal.item_names || [],
+            },
+          };
+        });
+
+        setMealOptions(processedMeals);
       } catch (error) {
         console.error("Error fetching meal options:", error);
         setError(error.message || "Failed to load meal recommendations");
@@ -157,14 +181,18 @@ const ResultsScreen = ({ navigation }) => {
 
     try {
       const currentMeal = mealOptions[index].meal;
-      const response = await api.meals.saveMeal({
-        restaurant: currentMeal.restaurant,
-        calories: currentMeal.calories,
-        protein: currentMeal.protein,
-        carbs: currentMeal.carbs,
-        fats: currentMeal.fats,
-        food_item_ids: currentMeal.food_item_ids,
-      });
+
+      // Make sure all required properties exist
+      const mealToSave = {
+        restaurant: currentMeal.restaurant || "Unknown Restaurant",
+        calories: currentMeal.calories || 0,
+        protein: currentMeal.protein || 0,
+        carbs: currentMeal.carbs || 0,
+        fats: currentMeal.fats || 0,
+        food_item_ids: currentMeal.food_item_ids || [],
+      };
+
+      const response = await api.meals.saveMeal(mealToSave);
 
       Alert.alert("Success", "Meal saved successfully!");
     } catch (error) {
@@ -222,31 +250,48 @@ const ResultsScreen = ({ navigation }) => {
 
     return (
       <>
-        <Text style={styles.restaurantName}>{currentMeal.restaurant}</Text>
+        <Text style={styles.restaurantName}>
+          {currentMeal.restaurant || "Unknown Restaurant"}
+        </Text>
         <View style={styles.macroContainer}>
           <Text style={styles.macroLabel}>Calories:</Text>
-          <Text style={styles.macroValue}>{currentMeal.calories}</Text>
+          <Text style={styles.macroValue}>{currentMeal.calories || 0}</Text>
         </View>
         <View style={styles.macroContainer}>
           <Text style={styles.macroLabel}>Protein:</Text>
-          <Text style={styles.macroValue}>{currentMeal.protein}g</Text>
+          <Text style={styles.macroValue}>{currentMeal.protein || 0}g</Text>
         </View>
         <View style={styles.macroContainer}>
           <Text style={styles.macroLabel}>Carbs:</Text>
-          <Text style={styles.macroValue}>{currentMeal.carbs}g</Text>
+          <Text style={styles.macroValue}>{currentMeal.carbs || 0}g</Text>
         </View>
         <View style={styles.macroContainer}>
           <Text style={styles.macroLabel}>Fat:</Text>
-          <Text style={styles.macroValue}>{currentMeal.fats}g</Text>
+          <Text style={styles.macroValue}>{currentMeal.fats || 0}g</Text>
         </View>
 
         <View style={styles.foodItemsContainer}>
           <Text style={styles.foodItemsHeader}>Items in this meal:</Text>
-          {currentMeal.food_item_ids.map((id, i) => (
-            <Text key={i} style={styles.foodItemText}>
-              • Item {i + 1}
+          {currentMeal.item_names && currentMeal.item_names.length > 0 ? (
+            // If we have item names available, use them
+            currentMeal.item_names.map((name, i) => (
+              <Text key={i} style={styles.foodItemText}>
+                • {name}
+              </Text>
+            ))
+          ) : currentMeal.food_item_ids &&
+            currentMeal.food_item_ids.length > 0 ? (
+            // Otherwise fall back to item IDs
+            currentMeal.food_item_ids.map((id, i) => (
+              <Text key={i} style={styles.foodItemText}>
+                • Item {i + 1}
+              </Text>
+            ))
+          ) : (
+            <Text style={styles.foodItemText}>
+              • No items information available
             </Text>
-          ))}
+          )}
         </View>
 
         <Text style={styles.swipeText}>

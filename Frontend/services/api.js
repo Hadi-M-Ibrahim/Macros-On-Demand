@@ -179,7 +179,14 @@ const api = {
           fats: macroGoals.fats || "",
         }).toString();
 
-        const headers = await getAuthHeaders();
+        const token = await AsyncStorage.getItem("accessToken");
+        const headers = token
+          ? {
+              Authorization: `Bearer ${token}`,
+              "Content-Type": "application/json",
+            }
+          : { "Content-Type": "application/json" };
+
         const response = await fetch(
           `${API_BASE_URL}/search/meal-options/?${queryParams}`,
           {
@@ -204,7 +211,14 @@ const api = {
           fats: macroGoals.fats || "",
         }).toString();
 
-        const headers = await getAuthHeaders();
+        const token = await AsyncStorage.getItem("accessToken");
+        const headers = token
+          ? {
+              Authorization: `Bearer ${token}`,
+              "Content-Type": "application/json",
+            }
+          : { "Content-Type": "application/json" };
+
         const response = await fetch(
           `${API_BASE_URL}/search/ranked-meals/?${queryParams}`,
           {

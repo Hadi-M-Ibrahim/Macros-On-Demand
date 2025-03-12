@@ -373,15 +373,15 @@ const styles = StyleSheet.create({
     fontWeight: "bold",
     color: "white",
     textAlign: "center",
-    marginTop: 55,
+    marginTop: 45,
   },
   headerTitle: {
     fontFamily: "Poppins_400Regular",
     fontSize: 20,
     color: "white",
     textAlign: "center",
-    marginTop: 5,
-    marginBottom: 10,
+    marginTop: 2,
+    marginBottom: 25, // Increased spacing before the card
   },
   box: {
     backgroundColor: "white",
@@ -389,7 +389,7 @@ const styles = StyleSheet.create({
     borderRadius: 16,
     width: width * 0.85,
     // Adjusted height
-    height: height * 0.55,
+    height: height * 0.5,
     position: "absolute",
     shadowColor: "#000",
     shadowOffset: { width: 3, height: 6 },
@@ -507,7 +507,7 @@ const styles = StyleSheet.create({
   },
   swipeIconContainer: {
     position: "absolute",
-    bottom: 45, // Increased from 30 to add more space
+    bottom: 75, // Increased to add more space from the bottom
     left: 0,
     right: 0,
     flexDirection: "row",

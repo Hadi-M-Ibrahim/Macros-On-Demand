@@ -27,45 +27,44 @@ const ResultsScreen = ({ navigation }) => {
   const [error, setError] = useState(null);
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const translateX = useRef(new Animated.Value(0)).current;
-
   const { width, height } = Dimensions.get("window");
 
-  // Check if user is logged in and load meal options
   useEffect(() => {
     const fetchData = async () => {
       try {
         // Check login status
         const token = await AsyncStorage.getItem("accessToken");
         setIsLoggedIn(!!token);
+        console.log("User token:", token);
 
-        // Get macro goals
+        // Get macro goals from storage
         const macroGoalsString = await AsyncStorage.getItem("macroGoals");
         if (!macroGoalsString) {
           throw new Error("No macro goals found. Please set your goals first.");
         }
-
         const macroGoals = JSON.parse(macroGoalsString);
-        console.log("Fetching ranked meal options with goals:", macroGoals);
+        console.log("Macro goals from storage:", macroGoals);
 
-        // Use the API service to get ranked meal options
+        // Fetch ranked meal options using the API service
         const data = await api.meals.getRankedMealOptions(macroGoals);
+        console.log("API response data:", data);
 
         if (!data || !data.ranked_meals || data.ranked_meals.length === 0) {
           setError(
             "No meal options found with your criteria. Try adjusting your macro goals."
           );
-          setIsLoading(false);
           return;
         }
 
-        // Extract meal data from the ranked meals response using the correct key
+        // Update mapping: extract the nested meal object from meal_option
         const formattedMealOptions = data.ranked_meals.map(
-          (item) => item.meal_option
+          (item) => item.meal_option.meal
         );
+        console.log("Formatted meal options:", formattedMealOptions);
         setMealOptions(formattedMealOptions);
-      } catch (error) {
-        console.error("Error fetching meal options:", error);
-        setError(error.message || "Failed to load meal recommendations");
+      } catch (err) {
+        console.error("Error fetching meal options:", err);
+        setError(err.message || "Failed to load meal recommendations");
       } finally {
         setIsLoading(false);
       }
@@ -80,9 +79,7 @@ const ResultsScreen = ({ navigation }) => {
 
   const handleSwipe = (event) => {
     if (mealOptions.length === 0) return;
-
     const { translationX, state } = event.nativeEvent;
-
     if (state === State.END) {
       if (translationX > 50) {
         // Swiped right
@@ -105,14 +102,13 @@ const ResultsScreen = ({ navigation }) => {
           translateX.setValue(0);
         });
       } else {
-        // Return to center if swipe wasn't far enough
+        // Not a significant swipe—reset position
         Animated.spring(translateX, {
           toValue: 0,
           useNativeDriver: true,
         }).start();
       }
     } else if (state === State.ACTIVE) {
-      // Update position while dragging
       translateX.setValue(translationX);
     }
   };
@@ -130,7 +126,6 @@ const ResultsScreen = ({ navigation }) => {
 
     try {
       const currentMeal = mealOptions[index];
-
       const response = await api.meals.saveMeal({
         restaurant: currentMeal.restaurant,
         calories: currentMeal.calories,
@@ -139,10 +134,9 @@ const ResultsScreen = ({ navigation }) => {
         fats: currentMeal.fats,
         food_item_ids: currentMeal.food_item_ids,
       });
-
       Alert.alert("Success", "Meal saved successfully!");
-    } catch (error) {
-      console.error("Error saving meal:", error);
+    } catch (err) {
+      console.error("Error saving meal:", err);
       Alert.alert("Error", "Failed to save meal. Please try again.");
     }
   };
@@ -197,6 +191,10 @@ const ResultsScreen = ({ navigation }) => {
     }
 
     const currentMeal = mealOptions[index];
+    if (!currentMeal) {
+      console.warn("Current meal is undefined at index", index);
+      return null;
+    }
 
     return (
       <>
@@ -217,21 +215,18 @@ const ResultsScreen = ({ navigation }) => {
           <Text style={styles.macroLabel}>Fat:</Text>
           <Text style={styles.macroValue}>{currentMeal.fats}g</Text>
         </View>
-
         <View style={styles.foodItemsContainer}>
           <Text style={styles.foodItemsHeader}>Items in this meal:</Text>
-          {currentMeal.food_item_ids.map((id, i) => (
+          {currentMeal.food_item_ids?.map((id, i) => (
             <Text key={i} style={styles.foodItemText}>
               • Item {i + 1}
             </Text>
           ))}
         </View>
-
         <TouchableOpacity style={styles.saveButton} onPress={saveMeal}>
           <Ionicons name="bookmark-outline" size={24} color="white" />
           <Text style={styles.saveButtonText}>Save Meal</Text>
         </TouchableOpacity>
-
         <Text style={styles.swipeText}>
           Swipe to see more options ({index + 1}/{mealOptions.length})
         </Text>
@@ -253,9 +248,7 @@ const ResultsScreen = ({ navigation }) => {
       >
         <Ionicons name="arrow-back" size={30} color="white" />
       </TouchableOpacity>
-
       <Text style={styles.headerTitle}>Meal Recommendations</Text>
-
       <GestureHandlerRootView style={styles.container}>
         <PanGestureHandler
           onGestureEvent={handleSwipe}
@@ -267,7 +260,6 @@ const ResultsScreen = ({ navigation }) => {
           </Animated.View>
         </PanGestureHandler>
       </GestureHandlerRootView>
-
       <TouchableOpacity
         style={styles.iconContainer}
         onPress={() => navigation.navigate("UserProfile")}

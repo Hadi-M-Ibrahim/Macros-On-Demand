@@ -26,9 +26,22 @@ const ResultsScreen = ({ navigation }) => {
   const [mealOptions, setMealOptions] = useState([]);
   const [error, setError] = useState(null);
   const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const [showSecondLoadingMessage, setShowSecondLoadingMessage] =
+    useState(false);
   const translateX = useRef(new Animated.Value(0)).current;
 
   const { width, height } = Dimensions.get("window");
+
+  // Show secondary loading message after 5 seconds
+  useEffect(() => {
+    if (isLoading) {
+      const timer = setTimeout(() => {
+        setShowSecondLoadingMessage(true);
+      }, 5000);
+
+      return () => clearTimeout(timer);
+    }
+  }, [isLoading]);
 
   // Check if user is logged in and load meal options
   useEffect(() => {
@@ -213,6 +226,15 @@ const ResultsScreen = ({ navigation }) => {
         <View style={styles.loaderContainer}>
           <ActivityIndicator size="large" color="#4A2040" />
           <Text style={styles.loadingText}>Finding meal options...</Text>
+          <Text style={styles.loadingSubText}>
+            We're analyzing thousands of combinations to find your perfect meal.
+            This may take a moment.
+          </Text>
+          {showSecondLoadingMessage && (
+            <Text style={styles.loadingSubText}>
+              Nearly there! Just making sure your meal will be perfect!
+            </Text>
+          )}
         </View>
       );
     }
@@ -382,15 +404,14 @@ const styles = StyleSheet.create({
     color: "white",
     textAlign: "center",
     marginTop: 2,
-    marginBottom: 15, // Reduced space to move card up
+    marginBottom: 15,
   },
   box: {
     backgroundColor: "white",
     padding: 20,
     borderRadius: 16,
-    width: width * 0.65, // narrower width (reduced from 0.85)
-    height: height * 0.58, // taller height (increased from 0.50)
-    // Maintain 3:4 aspect ratio more closely
+    width: width * 0.65,
+    height: height * 0.58,
     shadowColor: "#000",
     shadowOffset: { width: 3, height: 6 },
     shadowOpacity: 0.2,
@@ -405,8 +426,18 @@ const styles = StyleSheet.create({
   loadingText: {
     fontFamily: "Poppins_400Regular",
     marginTop: 20,
-    fontSize: 16,
+    fontSize: 18,
     color: "#4A2040",
+    textAlign: "center",
+  },
+  loadingSubText: {
+    fontFamily: "Poppins_400Regular",
+    marginTop: 12,
+    fontSize: 14,
+    color: "#4A2040",
+    textAlign: "center",
+    paddingHorizontal: 10,
+    lineHeight: 20,
   },
   errorContainer: {
     flex: 1,
@@ -434,20 +465,20 @@ const styles = StyleSheet.create({
   },
   restaurantName: {
     fontFamily: "Poppins_400Regular",
-    fontSize: 20, // Reduced from 22
+    fontSize: 20,
     fontWeight: "bold",
     color: "#4A2040",
-    marginBottom: 15, // Reduced from 20
+    marginBottom: 15,
     textAlign: "center",
   },
   macroContainer: {
     flexDirection: "row",
     justifyContent: "space-between",
     alignItems: "center",
-    marginBottom: 8, // Reduced from 12
+    marginBottom: 8,
     borderBottomWidth: 1,
     borderBottomColor: "#f0f0f0",
-    paddingBottom: 6, // Reduced from 8
+    paddingBottom: 6,
   },
   macroLabel: {
     fontFamily: "Poppins_400Regular",
@@ -461,21 +492,21 @@ const styles = StyleSheet.create({
     fontWeight: "bold",
   },
   foodItemsContainer: {
-    marginTop: 15, // Reduced from 20
-    marginBottom: 15, // Reduced from 20
+    marginTop: 15,
+    marginBottom: 15,
   },
   foodItemsHeader: {
     fontFamily: "Poppins_400Regular",
     fontSize: 16,
     fontWeight: "bold",
     color: "#4A2040",
-    marginBottom: 8, // Reduced from 10
+    marginBottom: 8,
   },
   foodItemText: {
     fontFamily: "Poppins_400Regular",
     fontSize: 14,
     color: "#4A2040",
-    marginBottom: 4, // Reduced from 5
+    marginBottom: 4,
   },
   navHelpContainer: {
     marginTop: 10,
@@ -507,7 +538,7 @@ const styles = StyleSheet.create({
   },
   swipeIconContainer: {
     position: "absolute",
-    bottom: 30, // Adjusted for better positioning
+    bottom: 30,
     left: 0,
     right: 0,
     flexDirection: "row",

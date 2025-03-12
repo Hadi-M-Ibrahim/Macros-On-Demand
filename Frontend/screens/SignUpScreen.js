@@ -122,7 +122,7 @@ const SignUpScreen = ({ navigation }) => {
     }
   };
   const { width, height } = Dimensions.get("window");
-  const isSmallScreen = height < 750; 
+  const isSmallScreen = height < 750;
 
   return (
     <View style={styles.container}>
@@ -138,7 +138,7 @@ const SignUpScreen = ({ navigation }) => {
         bordered
         padding={isSmallScreen ? "$1" : "$6"}
         width={width * 0.8}
-        height={isSmallScreen ? height * 0.8 : height * 0.85} 
+        height={isSmallScreen ? height * 0.8 : height * 0.85}
         backgroundColor="white"
         borderWidth={0}
         shadowColor="rgba(0, 0, 0, 0.1)"
@@ -169,7 +169,7 @@ const SignUpScreen = ({ navigation }) => {
               fontSize: isSmallScreen ? 18 : 24,
               color: "#4A2040",
               marginTop: isSmallScreen ? 5 : 10,
-              ...(isSmallScreen && { marginBottom: 20 })
+              marginBottom: isSmallScreen ? 20 : 30,
             }}
           >
             Create Account
@@ -178,7 +178,10 @@ const SignUpScreen = ({ navigation }) => {
           {error ? <Text style={styles.errorText}>{error}</Text> : null}
 
           <Stack width="100%">
-            <Text fontSize={isSmallScreen ? 12 : 14} fontFamily="Poppins_400Regular">
+            <Text
+              fontSize={isSmallScreen ? 12 : 14}
+              fontFamily="Poppins_400Regular"
+            >
               Email
             </Text>
             <Input
@@ -191,7 +194,10 @@ const SignUpScreen = ({ navigation }) => {
           </Stack>
 
           <Stack width="100%">
-            <Text fontSize={isSmallScreen ? 12 : 14} fontFamily="Poppins_400Regular">
+            <Text
+              fontSize={isSmallScreen ? 12 : 14}
+              fontFamily="Poppins_400Regular"
+            >
               Password
             </Text>
             <Input
@@ -205,7 +211,10 @@ const SignUpScreen = ({ navigation }) => {
           </Stack>
 
           <Stack width="100%">
-            <Text fontSize={isSmallScreen ? 12 : 14} fontFamily="Poppins_400Regular">
+            <Text
+              fontSize={isSmallScreen ? 12 : 14}
+              fontFamily="Poppins_400Regular"
+            >
               Confirm Password
             </Text>
             <Input
@@ -222,7 +231,6 @@ const SignUpScreen = ({ navigation }) => {
             style={[
               styles.button,
               isSmallScreen && { paddingVertical: 8, paddingHorizontal: 12 },
-              (isSmallScreen && { marginBottom: 20 }),
             ]}
             onPress={onSignUp}
             disabled={isLoading}

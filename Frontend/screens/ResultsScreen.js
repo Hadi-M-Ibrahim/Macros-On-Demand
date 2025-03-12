@@ -47,8 +47,7 @@ const ResultsScreen = ({ navigation }) => {
         const macroGoals = JSON.parse(macroGoalsString);
         console.log("Fetching ranked meal options with goals:", macroGoals);
 
-        // Use the API service instead of direct fetch
-        // Using ranked meals endpoint for better performance
+        // Use the API service to get ranked meal options
         const data = await api.meals.getRankedMealOptions(macroGoals);
 
         if (!data || !data.ranked_meals || data.ranked_meals.length === 0) {
@@ -59,8 +58,10 @@ const ResultsScreen = ({ navigation }) => {
           return;
         }
 
-        // Extract meal data from the ranked meals response
-        const formattedMealOptions = data.ranked_meals.map((item) => item.meal);
+        // Extract meal data from the ranked meals response using the correct key
+        const formattedMealOptions = data.ranked_meals.map(
+          (item) => item.meal_option
+        );
         setMealOptions(formattedMealOptions);
       } catch (error) {
         console.error("Error fetching meal options:", error);
@@ -219,7 +220,6 @@ const ResultsScreen = ({ navigation }) => {
 
         <View style={styles.foodItemsContainer}>
           <Text style={styles.foodItemsHeader}>Items in this meal:</Text>
-          {/* We'd ideally fetch food item details here, but for now we'll just show IDs */}
           {currentMeal.food_item_ids.map((id, i) => (
             <Text key={i} style={styles.foodItemText}>
               • Item {i + 1}

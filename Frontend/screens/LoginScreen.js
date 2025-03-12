@@ -81,8 +81,7 @@ const LoginScreen = ({ navigation }) => {
         bordered
         padding={isSmallScreen ? "$1" : "$6"}
         width={"80%"}
-        // Reduce the height for better proportions
-        height={isSmallScreen ? height * 0.6 : height * 0.65}
+        // removed fixed height to allow content to expand with error message
         backgroundColor="white"
         borderWidth={0}
         shadowColor="rgba(0, 0, 0, 0.1)"
@@ -234,6 +233,8 @@ const styles = StyleSheet.create({
     fontFamily: "Poppins_400Regular",
     textAlign: "center",
     marginBottom: 10,
+    // add max width to ensure error message wraps properly
+    width: "100%",
   },
 });
 

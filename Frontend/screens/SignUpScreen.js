@@ -138,7 +138,7 @@ const SignUpScreen = ({ navigation }) => {
         bordered
         padding={isSmallScreen ? "$1" : "$6"}
         width={width * 0.8}
-        height={isSmallScreen ? height * 0.7 : height * 0.75} // updated height to reduce bottom margin whitespace
+        // removed fixed height to allow card to expand with content
         backgroundColor="white"
         borderWidth={0}
         shadowColor="rgba(0, 0, 0, 0.1)"
@@ -302,6 +302,7 @@ const styles = StyleSheet.create({
     fontFamily: "Poppins_400Regular",
     textAlign: "center",
     marginBottom: 10,
+    width: "100%", // ensure proper text wrapping
   },
 });
 

@@ -5,6 +5,7 @@ import {
   View,
   Alert,
   ActivityIndicator,
+  Dimensions,
 } from "react-native";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { Button, Input, Stack, Text, YStack, Card } from "tamagui";
@@ -27,7 +28,6 @@ const SignUpScreen = ({ navigation }) => {
   if (!fontsLoaded) {
     return <ActivityIndicator size="large" color="#0000ff" />;
   }
-
   // validate email with regex
   const validateEmail = (email) => {
     const regex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
@@ -121,6 +121,8 @@ const SignUpScreen = ({ navigation }) => {
       setIsLoading(false);
     }
   };
+  const { width, height } = Dimensions.get("window");
+  const isSmallScreen = height < 750; 
 
   return (
     <View style={styles.container}>
@@ -134,8 +136,9 @@ const SignUpScreen = ({ navigation }) => {
         elevate
         size="$4"
         bordered
-        padding="$6"
-        width={"80%"}
+        padding={isSmallScreen ? "$1" : "$6"}
+        width={width * 0.8}
+        height={isSmallScreen ? height * 0.8 : height * 0.85} 
         backgroundColor="white"
         borderWidth={0}
         shadowColor="rgba(0, 0, 0, 0.1)"
@@ -144,14 +147,14 @@ const SignUpScreen = ({ navigation }) => {
         shadowRadius={10}
       >
         <YStack
-          space="$4"
-          padding="$4"
+          space={isSmallScreen ? "$1" : "$4"}
+          padding={isSmallScreen ? "$2" : "$4"}
           borderRadius="$4"
           backgroundColor="$color2"
           alignItems="center"
         >
           <Text
-            fontSize="$8"
+            fontSize={isSmallScreen ? "$6" : "$8"}
             fontWeight="bold"
             color="#4A2040"
             textAlign="center"
@@ -163,9 +166,9 @@ const SignUpScreen = ({ navigation }) => {
           <Text
             style={{
               fontFamily: "Poppins_400Regular",
-              fontSize: 24,
+              fontSize: isSmallScreen ? 18 : 24,
               color: "#4A2040",
-              marginTop: 10,
+              marginTop: isSmallScreen ? 5 : 10,
             }}
           >
             Create Account
@@ -174,39 +177,48 @@ const SignUpScreen = ({ navigation }) => {
           {error ? <Text style={styles.errorText}>{error}</Text> : null}
 
           <Stack width="100%">
-            <Text fontFamily="Poppins_400Regular">Email</Text>
+            <Text fontSize={isSmallScreen ? 12 : 14} fontFamily="Poppins_400Regular">
+              Email
+            </Text>
             <Input
               placeholder="Enter your email"
               value={email}
               onChangeText={setEmail}
-              padding="$2"
+              padding={isSmallScreen ? "$1" : "$2"}
             />
           </Stack>
 
           <Stack width="100%">
-            <Text fontFamily="Poppins_400Regular">Password</Text>
+            <Text fontSize={isSmallScreen ? 12 : 14} fontFamily="Poppins_400Regular">
+              Password
+            </Text>
             <Input
               placeholder="Enter your password"
               value={password}
               secureTextEntry
               onChangeText={setPassword}
-              padding="$2"
+              padding={isSmallScreen ? "$1" : "$2"}
             />
           </Stack>
 
           <Stack width="100%">
-            <Text fontFamily="Poppins_400Regular">Confirm Password</Text>
+            <Text fontSize={isSmallScreen ? 12 : 14} fontFamily="Poppins_400Regular">
+              Confirm Password
+            </Text>
             <Input
               placeholder="Confirm your password"
               value={confirmPassword}
               secureTextEntry
               onChangeText={setConfirmPassword}
-              padding="$2"
+              padding={isSmallScreen ? "$1" : "$2"}
             />
           </Stack>
 
           <TouchableOpacity
-            style={styles.button}
+            style={[
+              styles.button,
+              isSmallScreen && { paddingVertical: 8, paddingHorizontal: 12 },
+            ]}
             onPress={onSignUp}
             disabled={isLoading}
           >
@@ -224,10 +236,22 @@ const SignUpScreen = ({ navigation }) => {
             }}
             onPress={() => navigation.navigate("Login")}
           >
-            <Text style={{ color: "black", textAlign: "center" }}>
+            <Text
+              style={{
+                color: "black",
+                textAlign: "center",
+                fontSize: isSmallScreen ? 12 : 14,
+              }}
+            >
               Already have an account?
             </Text>
-            <Text style={{ color: "#0000FF", textAlign: "center" }}>
+            <Text
+              style={{
+                color: "#0000FF",
+                textAlign: "center",
+                fontSize: isSmallScreen ? 14 : 16,
+              }}
+            >
               Log In
             </Text>
           </Button>

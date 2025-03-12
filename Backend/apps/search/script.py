@@ -35,12 +35,10 @@ def get_db_connection():
         return None
 
 def check_meal_options(calorie_limit, protein_limit, carb_limit, fat_limit):
-    # Get database connection
     collection = get_db_connection()
     if collection is None:
         return []
     
-    # Query all food items - including restaurant info
     all_items = list(collection.find({}, {
         "id": 1,
         "item_name": 1,
@@ -52,82 +50,70 @@ def check_meal_options(calorie_limit, protein_limit, carb_limit, fat_limit):
         "fats": 1
     }))
     
-    # Filter out beverage and toppings/ingredients categories
     excluded_categories = ["Beverages", "Toppings & Ingredients"]
     filtered_items = [item for item in all_items if item.get("food_category") not in excluded_categories]
     
-    # Group items by restaurant first
     restaurants = {}
     for item in filtered_items:
         restaurant_name = item.get("restaurant")
         if not restaurant_name:
             continue
-            
-        if restaurant_name not in restaurants:
-            restaurants[restaurant_name] = []
-        restaurants[restaurant_name].append(item)
+        restaurants.setdefault(restaurant_name, []).append(item)
     
     valid_meals = []
     
-    # Process each restaurant separately
     for restaurant_name, restaurant_items in restaurants.items():
-        # Group items by category for this restaurant
         entrees = [item for item in restaurant_items if item.get("food_category") in ["Sandwiches", "Entrees", "Pizza", "Burgers"]]
         sides = [item for item in restaurant_items if item.get("food_category") in ["Fried Potatoes", "Appetizers & Sides", "Salads", "Soup", "Baked Goods"]]
         desserts = [item for item in restaurant_items if item.get("food_category") == "Desserts"]
         
-        # Generate all valid meal combinations for this restaurant
-        # First, handle combinations with 0 or 1 or 2 entrees
-        for entree_count in range(3):  # 0, 1, or 2 entrees
+        for entree_count in range(3):
             entree_combos = list(combinations(entrees, entree_count)) if entree_count > 0 else [()]
             
-            # For each entree combination
             for entree_combo in entree_combos:
-                # Handle combinations with 0 or 1 or 2 sides
-                for side_count in range(3):  # 0, 1, or 2 sides
+                for side_count in range(3):
                     side_combos = list(combinations(sides, side_count)) if side_count > 0 else [()]
                     
-                    # For each side combination
                     for side_combo in side_combos:
-                        # Handle combinations with 0 or 1 dessert
                         dessert_combos = list(combinations(desserts, 1)) if desserts else [()]
-                        dessert_combos.append(())  # Add empty tuple for 0 desserts
+                        dessert_combos.append(()) 
                         
                         for dessert_combo in dessert_combos:
-                            # Skip completely empty meals
                             if not entree_combo and not side_combo and not dessert_combo:
                                 continue
                             
-                            # Calculate total macros
-                            total_calories = sum(item.get("calories", 0) for item in entree_combo + side_combo + dessert_combo)
-                            total_protein = sum(item.get("protein", 0) for item in entree_combo + side_combo + dessert_combo)
-                            total_carbs = sum(item.get("carbohydrates", 0) for item in entree_combo + side_combo + dessert_combo)
-                            total_fats = sum(item.get("fats", 0) for item in entree_combo + side_combo + dessert_combo)
-
-                            # Check constraints
-                            if (total_calories <= calorie_limit and 
-                                total_protein <= protein_limit and 
-                                total_carbs <= carb_limit and 
-                                total_fats <= fat_limit):
-                                
-                                # Create meal object in the requested format
-                                food_item_ids = [str(item.get("id")) for item in entree_combo + side_combo + dessert_combo]
-                                
-                                meal = {
-                                    "message": "Meal option generated successfully.",
-                                    "meal": {
-                                        "restaurant": restaurant_name,
-                                        "calories": total_calories,
-                                        "protein": total_protein,
-                                        "carbs": total_carbs,
-                                        "fats": total_fats,
-                                        "food_item_ids": food_item_ids
-                                    }
-                                }
-                                
-                                valid_meals.append(meal)
-
+                            meal_items = entree_combo + side_combo + dessert_combo
+                            
+                            total_calories = sum(item.get("calories", 0) for item in meal_items)
+                            total_protein = sum(item.get("protein", 0) for item in meal_items)
+                            total_carbs = sum(item.get("carbohydrates", 0) for item in meal_items)
+                            total_fats = sum(item.get("fats", 0) for item in meal_items)
+                            
+                            error = (abs(total_calories - calorie_limit) +
+                                     abs(total_protein - protein_limit) +
+                                     abs(total_carbs - carb_limit) +
+                                     abs(total_fats - fat_limit))
+                            
+                            meal = {
+                                "message": "Meal option generated successfully.",
+                                "meal": {
+                                    "restaurant": restaurant_name,
+                                    "calories": total_calories,
+                                    "protein": total_protein,
+                                    "carbs": total_carbs,
+                                    "fats": total_fats,
+                                    "food_item_ids": [str(item.get("id")) for item in meal_items]
+                                },
+                                "error": error
+                            }
+                            
+                            valid_meals.append(meal)
+    
+    valid_meals.sort(key=lambda x: x["error"])
+    
     return valid_meals
+
+
 
 def save_meal_to_db(meal_data):
     """

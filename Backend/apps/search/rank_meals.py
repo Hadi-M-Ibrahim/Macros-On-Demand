@@ -1,7 +1,7 @@
 # this script ranks the list of valid meal permutations created from script.py
 
 import math
-from .script import check_meal_options
+from script import check_meal_options
 
 def calculate_rmse(actual, target):
     """

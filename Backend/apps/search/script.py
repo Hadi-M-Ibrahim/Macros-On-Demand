@@ -7,19 +7,15 @@ from pymongo import MongoClient
 """
 Example format of a valid meal option 
 {
-  "message": "Meal saved successfully.",
-  "meal": {
-      "id": "<meal_id>",
-      "restaurant": "Unique Restaurant Inc.",
-      "calories": 750.0,
-      "protein": 50.0,
-      "carbs": 80.0,
-      "fats": 30.0,
-      "food_item_ids": [
-         "67cbcd5d57283efc873ae064",
-         "67cbcd5e57283efc873ae066"
-      ]
-  }
+  "restaurant": "Unique Restaurant Inc.",
+  "calories": 750,
+  "protein": 50,
+  "carbs": 80,
+  "fats": 30,
+  "food_item_ids": [
+    "67cbcd5d57283efc873ae064",
+    "67cbcd5e57283efc873ae066"
+  ]
 }
 """
 
@@ -114,15 +110,12 @@ def check_meal_options(calorie_limit, protein_limit, carb_limit, fat_limit):
                                 food_item_ids = [str(item.get("id")) for item in entree_combo + side_combo + dessert_combo]
                                 
                                 meal = {
-                                    "message": "Meal option generated successfully.",
-                                    "meal": {
-                                        "restaurant": restaurant_name,
-                                        "calories": total_calories,
-                                        "protein": total_protein,
-                                        "carbs": total_carbs,
-                                        "fats": total_fats,
-                                        "food_item_ids": food_item_ids
-                                    }
+                                    "restaurant": restaurant_name,
+                                    "calories": total_calories,
+                                    "protein": total_protein,
+                                    "carbs": total_carbs,
+                                    "fats": total_fats,
+                                    "food_item_ids": food_item_ids
                                 }
                                 
                                 valid_meals.append(meal)

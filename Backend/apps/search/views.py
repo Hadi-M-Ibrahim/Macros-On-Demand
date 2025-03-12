@@ -35,24 +35,24 @@ def ranked_meal_options_view(request):
     View function to get ranked meal options based on how close they are to the specified limits
     """
     try:
-        # get user-defined macronutrient constraints from query parameters
+        # Get user-defined macronutrient constraints from query parameters
         calorie_limit = int(request.GET.get("calories", 800))
         protein_limit = int(request.GET.get("protein", 50))
         carb_limit = int(request.GET.get("carbs", 100))
         fat_limit = int(request.GET.get("fats", 30))
         
-        # optional parameters
+        # Optional parameters
         top_n = int(request.GET.get("top_n", 10))
         by_restaurant = request.GET.get("by_restaurant", "false").lower() == "true"
         top_n_per_restaurant = int(request.GET.get("top_n_per_restaurant", 3))
         
         if by_restaurant:
-            # get top meals by restaurant
+            # Get top meals by restaurant
             top_meals = get_top_ranked_meals_by_restaurant(
                 calorie_limit, protein_limit, carb_limit, fat_limit, top_n_per_restaurant
             )
             
-            # format response
+            # Format response
             formatted_result = {
                 "restaurants": {}
             }
@@ -64,19 +64,19 @@ def ranked_meal_options_view(request):
                         "rmse": meal["rmse"],
                         "avg_utilization": meal["avg_utilization"],
                         "utilization": meal["utilization"],
-                        "meal": meal["meal_option"]
+                        "meal": meal["meal"]
                     }
                     for meal in meals
                 ]
             
             return JsonResponse(formatted_result)
         else:
-            # get top meals overall
+            # Get top meals overall
             top_meals = get_top_ranked_meals(
                 calorie_limit, protein_limit, carb_limit, fat_limit, top_n
             )
             
-            # format response
+            # Format response
             formatted_result = {
                 "count": len(top_meals),
                 "ranked_meals": [
@@ -85,7 +85,7 @@ def ranked_meal_options_view(request):
                         "rmse": meal["rmse"],
                         "avg_utilization": meal["avg_utilization"],
                         "utilization": meal["utilization"],
-                        "meal": meal["meal_option"]
+                        "meal": meal["meal"]
                     }
                     for meal in top_meals
                 ]
@@ -109,19 +109,11 @@ def save_meal_view(request):
         data = json.loads(request.body)
         
         # Validate input
-        required_fields = ["restaurant", "food_item_ids", "macros"]
+        required_fields = ["restaurant", "food_item_ids", "calories", "protein", "carbs", "fats"]
         for field in required_fields:
             if field not in data:
                 return JsonResponse({
                     "error": f"Missing required field: {field}"
-                }, status=400)
-        
-        # Validate macros
-        required_macros = ["calories", "protein", "carbs", "fats"]
-        for macro in required_macros:
-            if macro not in data["macros"]:
-                return JsonResponse({
-                    "error": f"Missing required macro: {macro}"
                 }, status=400)
 
         # Save meal to database

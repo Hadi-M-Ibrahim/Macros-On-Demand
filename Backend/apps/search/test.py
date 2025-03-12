@@ -184,6 +184,8 @@ def print_ranked_meal_permutations():
         # Get ranked meals
         ranked_meals = rank_meal_options(calorie_limit, protein_limit, carb_limit, fat_limit)
         
+        print(ranked_meals[0])
+
         # Print results
         if not ranked_meals:
             print("No valid meal permutations found with the given constraints.")
@@ -193,7 +195,7 @@ def print_ranked_meal_permutations():
             # Group meals by restaurant for easier reading
             meals_by_restaurant = {}
             for meal in ranked_meals:
-                restaurant = meal["meal_option"]["meal"]["restaurant"]
+                restaurant = meal["meal"]["restaurant"]
                 if restaurant not in meals_by_restaurant:
                     meals_by_restaurant[restaurant] = []
                 meals_by_restaurant[restaurant].append(meal)
@@ -203,7 +205,7 @@ def print_ranked_meal_permutations():
                 print(f"\n=== {restaurant} ({len(meals)} meals) ===")
                 
                 for meal in meals:
-                    m = meal["meal_option"]["meal"]
+                    m = meal["meal"]
                     
                     # Get food item details
                     food_items = []

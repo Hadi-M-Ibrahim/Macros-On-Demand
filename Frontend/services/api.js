@@ -55,6 +55,27 @@ const getAuthHeaders = async () => {
   };
 };
 
+// Add a timeout to fetch for long-running operations
+const fetchWithTimeout = async (url, options, timeout = 30000) => {
+  const controller = new AbortController();
+  const timeoutId = setTimeout(() => controller.abort(), timeout);
+
+  try {
+    const response = await fetch(url, {
+      ...options,
+      signal: controller.signal,
+    });
+    clearTimeout(timeoutId);
+    return response;
+  } catch (error) {
+    clearTimeout(timeoutId);
+    if (error.name === "AbortError") {
+      throw new Error("Request timed out. Please try again.");
+    }
+    throw error;
+  }
+};
+
 // API endpoints
 const api = {
   // Auth endpoints
@@ -177,17 +198,31 @@ const api = {
           protein: macroGoals.protein || "",
           carbs: macroGoals.carbs || "",
           fats: macroGoals.fats || "",
+          limit: "30", // Limit results for better performance
         }).toString();
 
         const headers = await getAuthHeaders();
-        const response = await fetch(
+
+        // fetchWithTimeout for this longer operation
+        console.log(`Fetching meal options for: ${JSON.stringify(macroGoals)}`);
+        const startTime = Date.now();
+
+        const response = await fetchWithTimeout(
           `${API_BASE_URL}/search/meal-options/?${queryParams}`,
           {
             method: "GET",
             headers,
-          }
+          },
+          60000 // 60 second timeout
         );
-        return handleResponse(response);
+
+        const data = await handleResponse(response);
+        console.log(
+          `Meal options fetched in ${(Date.now() - startTime) / 1000}s, found ${
+            data.count
+          } options`
+        );
+        return data;
       } catch (error) {
         console.error("Get meal options error:", error);
         throw error;
@@ -202,17 +237,32 @@ const api = {
           protein: macroGoals.protein || "",
           carbs: macroGoals.carbs || "",
           fats: macroGoals.fats || "",
+          top_n: "20", // Request 20 meal options
         }).toString();
 
         const headers = await getAuthHeaders();
-        const response = await fetch(
+        console.log(
+          `Fetching ranked meal options for: ${JSON.stringify(macroGoals)}`
+        );
+        const startTime = Date.now();
+
+        // fetch with timeout
+        const response = await fetchWithTimeout(
           `${API_BASE_URL}/search/ranked-meals/?${queryParams}`,
           {
             method: "GET",
             headers,
-          }
+          },
+          90000 // 90 second timeout for ranked meals
         );
-        return handleResponse(response);
+
+        const data = await handleResponse(response);
+        console.log(
+          `Ranked meal options fetched in ${
+            (Date.now() - startTime) / 1000
+          }s, found ${data.count} options`
+        );
+        return data;
       } catch (error) {
         console.error("Get ranked meal options error:", error);
         throw error;

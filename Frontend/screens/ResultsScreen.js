@@ -45,26 +45,13 @@ const ResultsScreen = ({ navigation }) => {
         }
 
         const macroGoals = JSON.parse(macroGoalsString);
+        console.log("Fetching ranked meal options with goals:", macroGoals);
 
+        // Use the API service instead of direct fetch
+        // Using ranked meals endpoint for better performance
+        const data = await api.meals.getRankedMealOptions(macroGoals);
 
-        // Add search endpoint to the backend URLs
-        const response = await fetch(
-          `http://34.82.71.163:8000/api/search/meal-options/?calories=${macroGoals.calories}&protein=${macroGoals.protein}&carbs=${macroGoals.carbs}&fats=${macroGoals.fats}`,
-          {
-            method: "GET",
-            headers: token
-              ? { Authorization: `Bearer ${token}` }
-              : { "Content-Type": "application/json" },
-          }
-        );
-
-        const data = await response.json();
-
-        if (!response.ok) {
-          throw new Error(data.error || "Failed to fetch meal options");
-        }
-
-        if (!data.valid_meals || data.valid_meals.length === 0) {
+        if (!data || !data.ranked_meals || data.ranked_meals.length === 0) {
           setError(
             "No meal options found with your criteria. Try adjusting your macro goals."
           );
@@ -72,7 +59,9 @@ const ResultsScreen = ({ navigation }) => {
           return;
         }
 
-        setMealOptions(data.valid_meals);
+        // Extract meal data from the ranked meals response
+        const formattedMealOptions = data.ranked_meals.map((item) => item.meal);
+        setMealOptions(formattedMealOptions);
       } catch (error) {
         console.error("Error fetching meal options:", error);
         setError(error.message || "Failed to load meal recommendations");
@@ -139,7 +128,7 @@ const ResultsScreen = ({ navigation }) => {
     if (mealOptions.length === 0) return;
 
     try {
-      const currentMeal = mealOptions[index].meal;
+      const currentMeal = mealOptions[index];
 
       const response = await api.meals.saveMeal({
         restaurant: currentMeal.restaurant,
@@ -169,6 +158,10 @@ const ResultsScreen = ({ navigation }) => {
         <View style={styles.loaderContainer}>
           <ActivityIndicator size="large" color="#4A2040" />
           <Text style={styles.loadingText}>Finding meal options...</Text>
+          <Text style={styles.loadingSubText}>
+            We're analyzing thousands of combinations to find your perfect meal.
+            This may take a moment.
+          </Text>
         </View>
       );
     }
@@ -202,7 +195,7 @@ const ResultsScreen = ({ navigation }) => {
       );
     }
 
-    const currentMeal = mealOptions[index].meal;
+    const currentMeal = mealOptions[index];
 
     return (
       <>
@@ -324,6 +317,14 @@ const styles = StyleSheet.create({
     marginTop: 20,
     fontSize: 16,
     color: "#4A2040",
+  },
+  loadingSubText: {
+    fontFamily: "Poppins_400Regular",
+    marginTop: 10,
+    fontSize: 14,
+    color: "#666",
+    textAlign: "center",
+    paddingHorizontal: 15,
   },
   errorContainer: {
     flex: 1,

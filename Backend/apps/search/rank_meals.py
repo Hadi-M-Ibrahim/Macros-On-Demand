@@ -1,7 +1,11 @@
 # this script ranks the list of valid meal permutations created from script.py
 
 import math
+import time
 from .script import check_meal_options
+
+# Simple caching mechanism
+ranking_cache = {}
 
 def calculate_rmse(actual, target):
     """
@@ -28,7 +32,7 @@ def calculate_rmse(actual, target):
     # Return square root of mean squared error
     return math.sqrt(mean_squared_error)
 
-def rank_meal_options(calorie_limit, protein_limit, carb_limit, fat_limit):
+def rank_meal_options(calorie_limit, protein_limit, carb_limit, fat_limit, max_meals=100):
     """
     rank meal options based on how close they are to the target macronutrient values.
     
@@ -37,12 +41,27 @@ def rank_meal_options(calorie_limit, protein_limit, carb_limit, fat_limit):
         protein_limit (int): max protein allowed in grams
         carb_limit (int): max carbohydrates allowed in grams
         fat_limit (int): max fats allowed in grams
+        max_meals (int): maximum number of meals to process
         
     output:
         list: sorted list of meal options with ranking information
     """
-    # Get all valid meal options within the limits
-    valid_meals = check_meal_options(calorie_limit, protein_limit, carb_limit, fat_limit)
+    # Check cache first
+    cache_key = f"{calorie_limit}_{protein_limit}_{carb_limit}_{fat_limit}_{max_meals}"
+    if cache_key in ranking_cache:
+        return ranking_cache[cache_key]
+    
+    start_time = time.time()
+    
+    # Get all valid meal options within the limits (with optimized parameters)
+    valid_meals = check_meal_options(
+        calorie_limit, 
+        protein_limit, 
+        carb_limit, 
+        fat_limit, 
+        max_items=4,  # Maximum 4 items per meal for better efficiency
+        limit=max_meals  # Limit the total number of meal options
+    )
     
     # Define target values (we want to be as close as possible to these maximums)
     target_macros = {
@@ -94,74 +113,8 @@ def rank_meal_options(calorie_limit, protein_limit, carb_limit, fat_limit):
     for i, meal in enumerate(ranked_meals, 1):
         meal["rank"] = i
     
+    print(f"Ranked {len(ranked_meals)} meal options in {time.time() - start_time:.2f} seconds")
+    
+    # Cache the results
+    ranking_cache[cache_key] = ranked_meals
     return ranked_meals
-
-def get_top_ranked_meals(calorie_limit, protein_limit, carb_limit, fat_limit, top_n=10):
-    """
-    get the top N ranked meal options.
-    
-    input:
-        calorie_limit (int): max calories allowed
-        protein_limit (int): max protein allowed in grams
-        carb_limit (int): max carbohydrates allowed in grams
-        fat_limit (int): max fats allowed in grams
-        top_n (int): number of top meals to return
-        
-    output:
-        list: Top N ranked meal options
-    """
-    ranked_meals = rank_meal_options(calorie_limit, protein_limit, carb_limit, fat_limit)
-    return ranked_meals[:min(top_n, len(ranked_meals))]
-
-def get_top_ranked_meals_by_restaurant(calorie_limit, protein_limit, carb_limit, fat_limit, top_n_per_restaurant=3):
-    """
-    get the top N ranked meal options for each restaurant.
-    
-    input:
-        calorie_limit (int): max calories allowed
-        protein_limit (int): max protein allowed in grams
-        carb_limit (int): max carbohydrates allowed in grams
-        fat_limit (int): max fats allowed in grams
-        top_n_per_restaurant (int): Number of top meals to return per restaurant
-        
-    output:
-        dict: Dictionary mapping restaurant names to lists of their top N ranked meal options
-    """
-    ranked_meals = rank_meal_options(calorie_limit, protein_limit, carb_limit, fat_limit)
-    
-    # Group meals by restaurant
-    meals_by_restaurant = {}
-    for meal in ranked_meals:
-        restaurant = meal["meal_option"]["meal"]["restaurant"]
-        if restaurant not in meals_by_restaurant:
-            meals_by_restaurant[restaurant] = []
-        meals_by_restaurant[restaurant].append(meal)
-    
-    # Get top N for each restaurant
-    top_meals_by_restaurant = {}
-    for restaurant, meals in meals_by_restaurant.items():
-        top_meals_by_restaurant[restaurant] = meals[:min(top_n_per_restaurant, len(meals))]
-    
-    return top_meals_by_restaurant
-
-if __name__ == "__main__":
-    # Example usage
-    calorie_limit = 800
-    protein_limit = 50
-    carb_limit = 100
-    fat_limit = 30
-    
-    # Get top 10 meals overall
-    top_meals = get_top_ranked_meals(calorie_limit, protein_limit, carb_limit, fat_limit)
-    
-    print(f"Top 10 Ranked Meals (Target: {calorie_limit} cal, {protein_limit}g protein, {carb_limit}g carbs, {fat_limit}g fats)")
-    for meal in top_meals:
-        m = meal["meal_option"]["meal"]
-        print(f"Rank {meal['rank']} - RMSE: {meal['rmse']:.2f} - Utilization: {meal['avg_utilization']:.1f}%")
-        print(f"  Restaurant: {m['restaurant']}")
-        print(f"  Macros: {m['calories']} cal ({meal['utilization']['calories']:.1f}%), " +
-              f"{m['protein']}g protein ({meal['utilization']['protein']:.1f}%), " +
-              f"{m['carbs']}g carbs ({meal['utilization']['carbs']:.1f}%), " +
-              f"{m['fats']}g fats ({meal['utilization']['fats']:.1f}%)")
-        print(f"  Food IDs: {', '.join(m['food_item_ids'])}")
-        print()

@@ -2,8 +2,17 @@ from django.http import JsonResponse
 from django.views.decorators.http import require_http_methods
 from django.views.decorators.csrf import csrf_exempt
 import json
+import threading
+import time
 from .script import check_meal_options, save_meal_to_db
 from .rank_meals import rank_meal_options, get_top_ranked_meals, get_top_ranked_meals_by_restaurant
+
+# Create background task for computationally intensive operations
+def process_in_background(func, *args, **kwargs):
+    thread = threading.Thread(target=func, args=args, kwargs=kwargs)
+    thread.daemon = True
+    thread.start()
+    return thread
 
 @require_http_methods(["GET"])
 def meal_options_view(request):
@@ -16,15 +25,36 @@ def meal_options_view(request):
         protein_limit = int(request.GET.get("protein", 50))
         carb_limit = int(request.GET.get("carbs", 100))
         fat_limit = int(request.GET.get("fats", 30))
+        
+        # optional parameters
+        limit = int(request.GET.get("limit", 50))  # Limit number of results
+        
+        # tracking time for performance monitoring
+        start_time = time.time()
 
         # Call the function from script.py to generate valid meal options
-        valid_meals = check_meal_options(calorie_limit, protein_limit, carb_limit, fat_limit)
+        # lmit to 4 items per meal and 50 results for better performance
+        valid_meals = check_meal_options(
+            calorie_limit, 
+            protein_limit, 
+            carb_limit, 
+            fat_limit, 
+            max_items=4, 
+            limit=limit
+        )
+        
+        # logging performance info
+        duration = time.time() - start_time
+        print(f"Meal generation completed in {duration:.2f} seconds. Found {len(valid_meals)} valid meals.")
 
         return JsonResponse({
             "count": len(valid_meals),
+            "duration_seconds": round(duration, 2),
             "valid_meals": valid_meals
         })
     except Exception as e:
+        import traceback
+        traceback.print_exc()
         return JsonResponse({
             "error": str(e)
         }, status=400)
@@ -41,10 +71,12 @@ def ranked_meal_options_view(request):
         carb_limit = int(request.GET.get("carbs", 100))
         fat_limit = int(request.GET.get("fats", 30))
         
-        # optional parameters
         top_n = int(request.GET.get("top_n", 10))
         by_restaurant = request.GET.get("by_restaurant", "false").lower() == "true"
         top_n_per_restaurant = int(request.GET.get("top_n_per_restaurant", 3))
+        
+        # tracking time
+        start_time = time.time()
         
         if by_restaurant:
             # get top meals by restaurant
@@ -69,6 +101,10 @@ def ranked_meal_options_view(request):
                     for meal in meals
                 ]
             
+            # Add performance info
+            duration = time.time() - start_time
+            formatted_result["duration_seconds"] = round(duration, 2)
+            
             return JsonResponse(formatted_result)
         else:
             # get top meals overall
@@ -79,6 +115,7 @@ def ranked_meal_options_view(request):
             # format response
             formatted_result = {
                 "count": len(top_meals),
+                "duration_seconds": round(time.time() - start_time, 2),
                 "ranked_meals": [
                     {
                         "rank": meal["rank"],
@@ -94,6 +131,8 @@ def ranked_meal_options_view(request):
             return JsonResponse(formatted_result)
             
     except Exception as e:
+        import traceback
+        traceback.print_exc()
         return JsonResponse({
             "error": str(e)
         }, status=400)
@@ -136,6 +175,8 @@ def save_meal_view(request):
             "error": "Invalid JSON in request body"
         }, status=400)
     except Exception as e:
+        import traceback
+        traceback.print_exc()
         return JsonResponse({
             "error": str(e)
         }, status=500)

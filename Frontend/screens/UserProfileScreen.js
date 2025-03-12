@@ -48,50 +48,18 @@ const UserProfile = () => {
   }, [navigation]);
 
   const logout = async () => {
-    console.log("Logout function called");
     try {
-      // Clear only authentication-related storage
-      console.log("Removing tokens...");
-      await AsyncStorage.removeItem("accessToken");
-      await AsyncStorage.removeItem("refreshToken");
-      await AsyncStorage.removeItem("userData");
-
-      console.log("Tokens removed, navigating to Login screen");
-      // Navigate to login screen - try a simpler navigation approach
-      navigation.navigate("Login");
-
-      // If the above doesn't work, try this alternative
-      // setTimeout(() => {
-      //   navigation.reset({
-      //     index: 0,
-      //     routes: [{ name: "Login" }],
-      //   });
-      // }, 100);
+      
+      await AsyncStorage.multiRemove(["accessToken", "refreshToken", "userData"]);
+      const remaining = await AsyncStorage.getAllKeys();
+      
+      navigation.reset({
+        index: 0,
+        routes: [{ name: "Login" }],
+      });
     } catch (error) {
-      console.error("Logout error:", error);
       Alert.alert("Error", "Failed to log out. Please try again.");
     }
-  };
-
-  const confirmLogout = () => {
-    console.log("Confirm logout pressed");
-    // Force an alert to verify Alert is working
-    Alert.alert(
-      "Log Out",
-      "Are you sure you want to log out?",
-      [
-        { text: "Cancel", style: "cancel" },
-        {
-          text: "Log Out",
-          onPress: () => {
-            console.log("Logout confirmed");
-            logout();
-          },
-          style: "destructive",
-        },
-      ],
-      { cancelable: false }
-    );
   };
 
   if (isLoading) {
@@ -187,17 +155,11 @@ const UserProfile = () => {
         <TouchableOpacity
           style={[styles.menuItem, styles.logoutItem]}
           onPress={() => {
-            console.log("Logout button pressed");
-            confirmLogout();
+            logout();
           }}
           activeOpacity={0.7}
         >
-          <Ionicons
-            name="log-out-outline"
-            size={24}
-            color="#FF6961"
-            style={styles.menuIcon}
-          />
+          <Ionicons name="log-out-outline" size={24} color="#FF6961" style={styles.menuIcon} />
           <Text style={styles.logoutText}>Log Out</Text>
         </TouchableOpacity>
       </View>

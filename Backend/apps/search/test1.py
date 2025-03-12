@@ -22,8 +22,19 @@ class TestMealRankings(unittest.TestCase):
         # Define restaurants and their food categories
         restaurants = [
             "McDonald's", "Burger King", "KFC", "Wendy's", "Taco Bell",
-            "Subway", "Pizza Hut", "Chick-fil-A", "Dunkin' Donuts", "Starbucks"
+            "Subway", "Pizza Hut", "Chick-fil-A", "Dunkin' Donuts", "Starbucks",
+            "Chipotle", "Church's Chicken", "Culver's", "Dairy Queen", "Del Taco",
+            "Denny's", "Dickey's Barbeque", "Domino's", "Einstein Bros", "El Pollo Loco",
+            "Famous Dave's", "Five Guys", "Hardee's", "IHOP", "In-N-Out", "Jack in the Box",
+            "Jamba Juice", "Jimmy John's", "Krispy Kreme", "Little Caesar's", "Long John Silver's",
+            "Moe's Southwest Grill", "Olive Garden", "Outback Steakhouse", "Panda Express",
+            "Panera Bread", "Papa John's", "Papa Murphy's", "Popeyes", "Portillo's", "Qdoba",
+            "Quiznos", "Raising Cane's Chicken Fingers", "Red Lobster", "Red Robin",
+            "Round Table Pizza", "Sbarro", "Shake Shack", "Sonic", "TGI Friday's",
+            "The Cheesecake Factory", "Tropical Smoothie Café", "Whataburger",
+            "White Castle", "Wingstop", "Zaxby's"
         ]
+
         
         # Define food categories for each restaurant
         entree_categories = ["Burgers", "Sandwiches", "Entrees", "Pizza"]
@@ -72,7 +83,7 @@ class TestMealRankings(unittest.TestCase):
             
             # Generate item with unique ID
             item = {
-                "id": ObjectId(f"67cbcd5d57283efc873ae{str(id_counter).zfill(3)}"),
+                "id": ObjectId(),
                 "item_name": name,
                 "restaurant": restaurant,
                 "food_category": category,
@@ -87,8 +98,8 @@ class TestMealRankings(unittest.TestCase):
         
         # Generate items for each restaurant
         for restaurant in restaurants:
-            # Generate 10 entrees, 10 sides, and 5 desserts for each restaurant
-            for i in range(10):
+            # Generate 20 entrees, 20 sides, and 10 desserts for each restaurant
+            for i in range(40):
                 entree = generate_food_item(restaurant, "entree", i+1)
                 self.items_by_restaurant[restaurant].append(entree)
                 self.all_items.append(entree)
@@ -97,7 +108,7 @@ class TestMealRankings(unittest.TestCase):
                 self.items_by_restaurant[restaurant].append(side)
                 self.all_items.append(side)
                 
-                if i < 5:
+                if i < 10:
                     dessert = generate_food_item(restaurant, "dessert", i+1)
                     self.items_by_restaurant[restaurant].append(dessert)
                     self.all_items.append(dessert)

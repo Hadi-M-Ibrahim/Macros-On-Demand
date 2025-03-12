@@ -1,5 +1,5 @@
 import math
-from script import check_meal_options
+from .script import check_meal_options
 
 def calculate_rmse(actual, target):
     """

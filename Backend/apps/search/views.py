@@ -7,7 +7,7 @@ import time
 import random
 
 from .script import check_meal_options, save_meal_to_db
-from .rank_meals import rank_meal_options, get_top_ranked_meals, get_top_ranked_meals_by_restaurant
+from .rank_meals import rank_meal_options
 
 def get_sample_meals(calorie_limit, protein_limit, carb_limit, fat_limit, count=10):
     """Generate sample meals for testing when real calculation would take too long"""

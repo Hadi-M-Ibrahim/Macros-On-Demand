@@ -363,14 +363,14 @@ const { width, height } = Dimensions.get("window");
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    justifyContent: "flex-start", // Changed from center to flex-start
-    paddingTop: 130, // Added padding top to position the card
+    justifyContent: "flex-start",
+    paddingTop: 50, // Slightly reduced to position card better
     alignItems: "center",
     overflow: "hidden",
   },
   appTitle: {
     fontFamily: "Poppins_400Regular",
-    fontSize: 28,
+    fontSize: 36,
     fontWeight: "bold",
     color: "white",
     textAlign: "center",
@@ -388,9 +388,9 @@ const styles = StyleSheet.create({
     backgroundColor: "white",
     padding: 20,
     borderRadius: 16,
-    width: width * 0.85,
-    height: height * 0.5,
-    // Removed absolute positioning to use container's layout
+    width: width * 0.65, // narrower width (reduced from 0.85)
+    height: height * 0.58, // taller height (increased from 0.50)
+    // Maintain 3:4 aspect ratio more closely
     shadowColor: "#000",
     shadowOffset: { width: 3, height: 6 },
     shadowOpacity: 0.2,
@@ -507,7 +507,7 @@ const styles = StyleSheet.create({
   },
   swipeIconContainer: {
     position: "absolute",
-    bottom: 25, // Move buttons up
+    bottom: 30, // Adjusted for better positioning
     left: 0,
     right: 0,
     flexDirection: "row",

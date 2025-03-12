@@ -138,7 +138,7 @@ const SignUpScreen = ({ navigation }) => {
         bordered
         padding={isSmallScreen ? "$1" : "$6"}
         width={width * 0.8}
-        height={isSmallScreen ? height * 0.6 : height * 0.65} // updated height to reduce bottom margin whitespace
+        height={isSmallScreen ? height * 0.75 : height * 0.8} // updated height to reduce bottom margin whitespace
         backgroundColor="white"
         borderWidth={0}
         shadowColor="rgba(0, 0, 0, 0.1)"

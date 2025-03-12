@@ -363,7 +363,8 @@ const { width, height } = Dimensions.get("window");
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    justifyContent: "center",
+    justifyContent: "flex-start", // Changed from center to flex-start
+    paddingTop: 130, // Added padding top to position the card
     alignItems: "center",
     overflow: "hidden",
   },
@@ -381,16 +382,15 @@ const styles = StyleSheet.create({
     color: "white",
     textAlign: "center",
     marginTop: 2,
-    marginBottom: 25, // Increased spacing before the card
+    marginBottom: 15, // Reduced space to move card up
   },
   box: {
     backgroundColor: "white",
     padding: 20,
     borderRadius: 16,
     width: width * 0.85,
-    // Adjusted height
     height: height * 0.5,
-    position: "absolute",
+    // Removed absolute positioning to use container's layout
     shadowColor: "#000",
     shadowOffset: { width: 3, height: 6 },
     shadowOpacity: 0.2,
@@ -507,7 +507,7 @@ const styles = StyleSheet.create({
   },
   swipeIconContainer: {
     position: "absolute",
-    bottom: 75, // Increased to add more space from the bottom
+    bottom: 25, // Move buttons up
     left: 0,
     right: 0,
     flexDirection: "row",

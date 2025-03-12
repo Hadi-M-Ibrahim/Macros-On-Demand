@@ -8,6 +8,7 @@ import {
   ActivityIndicator,
   Alert,
   Dimensions,
+  TextInput,
 } from "react-native";
 import { LinearGradient } from "@tamagui/linear-gradient";
 import { Card } from "tamagui";
@@ -20,35 +21,38 @@ const SavedMeals = ({ navigation }) => {
   const [meals, setMeals] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [searchQuery, setSearchQuery] = useState("");
+
+  const filteredMeals = meals.filter(item =>
+    item.meal.restaurant.toLowerCase().includes(searchQuery.toLowerCase())
+  );
+
+  const fetchSavedMeals = async () => {
+    try {
+      const token = await AsyncStorage.getItem("accessToken");
+      if (!token) {
+        navigation.navigate("Login", { redirect: "SavedMeals" });
+        return;
+      }
+      const data = await api.meals.getSavedMeals();
+      setMeals(data);
+    } catch (error) {
+      console.error("Error fetching saved meals:", error);
+      setError(error.message || "Failed to load saved meals");
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
   useEffect(() => {
-    const fetchSavedMeals = async () => {
-      try {
-        const token = await AsyncStorage.getItem("accessToken");
-        if (!token) {
-          navigation.navigate("Login", { redirect: "SavedMeals" });
-          return;
-        }
-
-        const data = await api.meals.getSavedMeals();
-        setMeals(data);
-      } catch (error) {
-        console.error("Error fetching saved meals:", error);
-        setError(error.message || "Failed to load saved meals");
-      } finally {
-        setIsLoading(false);
-      }
-    };
-
     fetchSavedMeals();
   }, [navigation]);
 
   const deleteMeal = async (mealId) => {
     try {
       await api.meals.deleteMeal(mealId);
-      // Update the state to remove the deleted meal
-      setMeals((prevMeals) =>
-        prevMeals.filter((item) => item.meal.id !== mealId)
+      setMeals(prevMeals =>
+        prevMeals.filter(item => item.meal.id !== mealId)
       );
       Alert.alert("Success", "Meal deleted successfully.");
     } catch (error) {
@@ -62,7 +66,6 @@ const SavedMeals = ({ navigation }) => {
     return (
       <Card style={styles.mealCard}>
         <Text style={styles.restaurantName}>{meal.restaurant}</Text>
-
         <View style={styles.macrosContainer}>
           <View style={styles.macroItem}>
             <Text style={styles.macroValue}>{meal.calories}</Text>
@@ -81,7 +84,6 @@ const SavedMeals = ({ navigation }) => {
             <Text style={styles.macroLabel}>Fat</Text>
           </View>
         </View>
-
         <Text style={styles.itemsHeader}>Food Items:</Text>
         {food_items && food_items.length > 0 ? (
           food_items.map((item, index) => (
@@ -92,7 +94,6 @@ const SavedMeals = ({ navigation }) => {
         ) : (
           <Text style={styles.emptyText}>No items details available</Text>
         )}
-
         <TouchableOpacity
           style={styles.deleteButton}
           onPress={() => deleteMeal(meal.id)}
@@ -100,12 +101,14 @@ const SavedMeals = ({ navigation }) => {
           <Ionicons name="trash-outline" size={18} color="white" />
           <Text style={styles.deleteButtonText}>Delete</Text>
         </TouchableOpacity>
-
       </Card>
     );
   };
 
-  useFonts({ Poppins_400Regular });
+  const [fontsLoaded] = useFonts({ Poppins_400Regular });
+  if (!fontsLoaded) {
+    return <ActivityIndicator size="large" color="#0000ff" />;
+  }
 
   return (
     <View style={styles.container}>
@@ -121,9 +124,16 @@ const SavedMeals = ({ navigation }) => {
       >
         <Ionicons name="arrow-back" size={30} color="white" />
       </TouchableOpacity>
-
+      
       <Text style={styles.header}>Saved Meals</Text>
-
+      <TextInput
+        style={styles.searchBar}
+        placeholder="Search by restaurant"
+        placeholderTextColor="#888"
+        value={searchQuery}
+        onChangeText={setSearchQuery}
+      />
+      
       {isLoading ? (
         <View style={styles.centerContainer}>
           <ActivityIndicator size="large" color="white" />
@@ -157,7 +167,7 @@ const SavedMeals = ({ navigation }) => {
         </View>
       ) : (
         <FlatList
-          data={meals}
+          data={filteredMeals}
           renderItem={renderMealItem}
           keyExtractor={(item, index) => `meal-${index}`}
           contentContainerStyle={styles.listContainer}
@@ -191,6 +201,19 @@ const styles = StyleSheet.create({
     fontSize: width * 0.07,
     marginTop: 70,
     marginBottom: 20,
+  },
+  searchBar: {
+    height: 40,
+    borderColor: "#ccc",
+    borderWidth: 1,
+    borderRadius: 8,
+    marginHorizontal: 15,
+    marginBottom: 15,
+    paddingHorizontal: 10,
+    backgroundColor: "white",
+    color: "#4A2040",
+    fontFamily: "Poppins_400Regular",
+    zIndex: 2, // ensure it's on top
   },
   listContainer: {
     paddingHorizontal: 15,

@@ -34,20 +34,15 @@ const ResultsScreen = ({ navigation }) => {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        // Check login status
         const token = await AsyncStorage.getItem("accessToken");
         setIsLoggedIn(!!token);
 
-        // Get macro goals
         const macroGoalsString = await AsyncStorage.getItem("macroGoals");
         if (!macroGoalsString) {
           throw new Error("No macro goals found. Please set your goals first.");
         }
-
         const macroGoals = JSON.parse(macroGoalsString);
 
-
-        // Add search endpoint to the backend URLs
         const response = await fetch(
           `http://34.82.71.163:8000/api/search/meal-options/?calories=${macroGoals.calories}&protein=${macroGoals.protein}&carbs=${macroGoals.carbs}&fats=${macroGoals.fats}`,
           {
@@ -85,47 +80,69 @@ const ResultsScreen = ({ navigation }) => {
   }, []);
 
   const getNextIndex = () => (index + 1) % (mealOptions.length || 1);
-  const getPrevIndex = () =>
-    (index - 1 + (mealOptions.length || 1)) % (mealOptions.length || 1);
+
+  const swipeRightAction = () => {
+    Animated.timing(translateX, {
+      toValue: width,
+      duration: 300,
+      useNativeDriver: true,
+    }).start(async () => {
+      await saveMeal();
+      setIndex(getNextIndex());
+      translateX.setValue(0);
+    });
+  };
+
+  // Swipe action for swiping left: simply skip to the next meal
+  const swipeLeftAction = () => {
+    Animated.timing(translateX, {
+      toValue: -width,
+      duration: 300,
+      useNativeDriver: true,
+    }).start(() => {
+      setIndex(getNextIndex());
+      translateX.setValue(0);
+    });
+  };
 
   const handleSwipe = (event) => {
     if (mealOptions.length === 0) return;
-
     const { translationX, state } = event.nativeEvent;
 
     if (state === State.END) {
       if (translationX > 50) {
-        // Swiped right
-        Animated.timing(translateX, {
-          toValue: width,
-          duration: 300,
-          useNativeDriver: true,
-        }).start(() => {
-          setIndex(getPrevIndex());
-          translateX.setValue(0);
-        });
+        swipeRightAction();
       } else if (translationX < -50) {
-        // Swiped left
-        Animated.timing(translateX, {
-          toValue: -width,
-          duration: 300,
-          useNativeDriver: true,
-        }).start(() => {
-          setIndex(getNextIndex());
-          translateX.setValue(0);
-        });
+        swipeLeftAction();
       } else {
-        // Return to center if swipe wasn't far enough
         Animated.spring(translateX, {
           toValue: 0,
           useNativeDriver: true,
         }).start();
       }
     } else if (state === State.ACTIVE) {
-      // Update position while dragging
       translateX.setValue(translationX);
     }
   };
+
+  useEffect(() => {
+    const handleKeyDown = (e) => {
+      if (e.key === "ArrowRight") {
+        swipeRightAction();
+      } else if (e.key === "ArrowLeft") {
+        swipeLeftAction();
+      }
+    };
+
+    if (typeof window !== "undefined") {
+      window.addEventListener("keydown", handleKeyDown);
+    }
+    return () => {
+      if (typeof window !== "undefined") {
+        window.removeEventListener("keydown", handleKeyDown);
+      }
+    };
+  }, [mealOptions, index, isLoggedIn]);
 
   const saveMeal = async () => {
     if (!isLoggedIn) {
@@ -140,7 +157,6 @@ const ResultsScreen = ({ navigation }) => {
 
     try {
       const currentMeal = mealOptions[index].meal;
-
       const response = await api.meals.saveMeal({
         restaurant: currentMeal.restaurant,
         calories: currentMeal.calories,
@@ -226,18 +242,12 @@ const ResultsScreen = ({ navigation }) => {
 
         <View style={styles.foodItemsContainer}>
           <Text style={styles.foodItemsHeader}>Items in this meal:</Text>
-          {/* We'd ideally fetch food item details here, but for now we'll just show IDs */}
           {currentMeal.food_item_ids.map((id, i) => (
             <Text key={i} style={styles.foodItemText}>
               • Item {i + 1}
             </Text>
           ))}
         </View>
-
-        <TouchableOpacity style={styles.saveButton} onPress={saveMeal}>
-          <Ionicons name="bookmark-outline" size={24} color="white" />
-          <Text style={styles.saveButtonText}>Save Meal</Text>
-        </TouchableOpacity>
 
         <Text style={styles.swipeText}>
           Swipe to see more options ({index + 1}/{mealOptions.length})
@@ -274,6 +284,16 @@ const ResultsScreen = ({ navigation }) => {
           </Animated.View>
         </PanGestureHandler>
       </GestureHandlerRootView>
+
+      {/* Swipe action icons */}
+      <View style={styles.swipeIconContainer}>
+        <TouchableOpacity onPress={swipeLeftAction} style={styles.iconButton}>
+          <Ionicons name="close-circle-outline" size={50} color="white" />
+        </TouchableOpacity>
+        <TouchableOpacity onPress={swipeRightAction} style={styles.iconButton}>
+          <Ionicons name="checkmark-circle-outline" size={50} color="white" />
+        </TouchableOpacity>
+      </View>
 
       <TouchableOpacity
         style={styles.iconContainer}
@@ -394,22 +414,6 @@ const styles = StyleSheet.create({
     color: "#4A2040",
     marginBottom: 5,
   },
-  saveButton: {
-    backgroundColor: "#9F6BA0",
-    padding: 14,
-    borderRadius: 12,
-    flexDirection: "row",
-    justifyContent: "center",
-    alignItems: "center",
-    marginVertical: 15,
-  },
-  saveButtonText: {
-    fontFamily: "Poppins_400Regular",
-    color: "white",
-    fontWeight: "bold",
-    marginLeft: 10,
-    fontSize: 16,
-  },
   swipeText: {
     fontFamily: "Poppins_400Regular",
     textAlign: "center",
@@ -428,6 +432,18 @@ const styles = StyleSheet.create({
     top: 30,
     left: 20,
     zIndex: 10,
+  },
+  swipeIconContainer: {
+    position: "absolute",
+    bottom: 30,
+    left: 0,
+    right: 0,
+    flexDirection: "row",
+    justifyContent: "space-around",
+    alignItems: "center",
+  },
+  iconButton: {
+    padding: 10,
   },
 });
 

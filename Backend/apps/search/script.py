@@ -4,6 +4,11 @@ from djongo import models
 from pymongo import MongoClient
 from functools import lru_cache
 import time
+import hashlib
+import logging
+from datetime import datetime
+
+logger = logging.getLogger(__name__)
 
 """
 Example format of a valid meal option 
@@ -28,17 +33,54 @@ def get_db_connection():
         collection = db["meals_fooditem"]
         return collection
     except Exception as e:
-        print(f"Error connecting to database: {e}")
+        logger.error(f"Error connecting to database: {e}")
         return None
 
-def check_meal_options(calorie_limit, protein_limit, carb_limit, fat_limit):
+# create cache key from the macro parameters
+def get_cache_key(calorie_limit, protein_limit, carb_limit, fat_limit, protein_flexibility=False):
+    params = f"{calorie_limit}_{protein_limit}_{carb_limit}_{fat_limit}_{protein_flexibility}"
+    return hashlib.md5(params.encode()).hexdigest()
+
+# cache in memory with LRU strategy
+@lru_cache(maxsize=100)
+def cached_meal_options(cache_key):
+    # ts is just for the in-memory cache
+    pass
+
+def check_meal_options(calorie_limit, protein_limit, carb_limit, fat_limit, protein_flexibility=False):
     """
     Optimized version of the meal options algorithm that:
     1. Pre-filters items that exceed constraints
     2. Uses early termination for combinations that will definitely exceed limits
     3. Caches partial combinations to avoid redundant calculations
+    4. Implements caching for repeated searches
+    5. Supports flexible protein goals
     """
     start_time = time.time()
+    
+    # generate cache key
+    cache_key = get_cache_key(calorie_limit, protein_limit, carb_limit, fat_limit, protein_flexibility)
+    
+    # try to get from cache first
+    try:
+        # try inmemory cache first
+        if cache_key in cached_meal_options.cache_info():
+            logger.info(f"Retrieved results from in-memory cache for key: {cache_key}")
+            return cached_meal_options(cache_key)
+            
+        # then try database cache if using MongoDB for caching
+        collection = get_db_connection()
+        if collection:
+            cache_collection = collection.database["search_cache"]
+            cached_result = cache_collection.find_one({"key": cache_key})
+            
+            if cached_result:
+                logger.info(f"Retrieved results from database cache for key: {cache_key}")
+                # store in in-memory cache for faster future access
+                cached_meal_options.__wrapped__(cache_key, cached_result["results"])
+                return cached_result["results"]
+    except Exception as e:
+        logger.error(f"Cache retrieval error: {e}")
     
     # Get database connection
     collection = get_db_connection()
@@ -65,7 +107,7 @@ def check_meal_options(calorie_limit, protein_limit, carb_limit, fat_limit):
         item for item in all_items 
         if item.get("food_category") not in excluded_categories
         and item.get("calories", 0) <= calorie_limit
-        and item.get("protein", 0) <= protein_limit
+        and (protein_flexibility or item.get("protein", 0) <= protein_limit)  # Allow exceeding protein if flexible
         and item.get("carbohydrates", 0) <= carb_limit
         and item.get("fats", 0) <= fat_limit
     ]
@@ -130,8 +172,10 @@ def check_meal_options(calorie_limit, protein_limit, carb_limit, fat_limit):
                     fat = e1.get("fats", 0) + e2.get("fats", 0)
                     
                     # Early termination if this combo already exceeds any limit
-                    if (cal <= calorie_limit and prot <= protein_limit and 
-                        carb <= carb_limit and fat <= fat_limit):
+                    if (cal <= calorie_limit and 
+                        (protein_flexibility or prot <= protein_limit) and
+                        carb <= carb_limit and 
+                        fat <= fat_limit):
                         valid_two_entree_combos.append((e1, e2))
             
             entree_combinations.extend(valid_two_entree_combos)
@@ -149,8 +193,10 @@ def check_meal_options(calorie_limit, protein_limit, carb_limit, fat_limit):
                     carb = s1.get("carbohydrates", 0) + s2.get("carbohydrates", 0)
                     fat = s1.get("fats", 0) + s2.get("fats", 0)
                     
-                    if (cal <= calorie_limit and prot <= protein_limit and 
-                        carb <= carb_limit and fat <= fat_limit):
+                    if (cal <= calorie_limit and 
+                        (protein_flexibility or prot <= protein_limit) and
+                        carb <= carb_limit and 
+                        fat <= fat_limit):
                         valid_two_side_combos.append((s1, s2))
             
             side_combinations.extend(valid_two_side_combos)
@@ -169,13 +215,15 @@ def check_meal_options(calorie_limit, protein_limit, carb_limit, fat_limit):
             
             # Calculate remaining limits
             remaining_calories = calorie_limit - entree_calories
-            remaining_protein = protein_limit - entree_protein
+            remaining_protein = protein_limit - entree_protein if not protein_flexibility else float('inf')
             remaining_carbs = carb_limit - entree_carbs
             remaining_fats = fat_limit - entree_fats
             
             # Skip if already over limits
-            if (remaining_calories < 0 or remaining_protein < 0 or 
-                remaining_carbs < 0 or remaining_fats < 0):
+            if (remaining_calories < 0 or 
+                (not protein_flexibility and remaining_protein < 0) or
+                remaining_carbs < 0 or 
+                remaining_fats < 0):
                 continue
             
             for side_combo in side_combinations:
@@ -187,13 +235,15 @@ def check_meal_options(calorie_limit, protein_limit, carb_limit, fat_limit):
 
                 # Calculate remaining limits after adding sides
                 remaining_calories_after_sides = remaining_calories - side_calories
-                remaining_protein_after_sides = remaining_protein - side_protein
+                remaining_protein_after_sides = remaining_protein - side_protein if not protein_flexibility else float('inf')
                 remaining_carbs_after_sides = remaining_carbs - side_carbs
                 remaining_fats_after_sides = remaining_fats - side_fats
                 
                 # Skip if over limits
-                if (remaining_calories_after_sides < 0 or remaining_protein_after_sides < 0 or
-                    remaining_carbs_after_sides < 0 or remaining_fats_after_sides < 0):
+                if (remaining_calories_after_sides < 0 or 
+                    (not protein_flexibility and remaining_protein_after_sides < 0) or
+                    remaining_carbs_after_sides < 0 or 
+                    remaining_fats_after_sides < 0):
                     continue
                 
                 for dessert_combo in dessert_combinations:
@@ -214,7 +264,7 @@ def check_meal_options(calorie_limit, protein_limit, carb_limit, fat_limit):
                     total_fats = entree_fats + side_fats + dessert_fats
                     
                     if (total_calories <= calorie_limit and 
-                        total_protein <= protein_limit and 
+                        (protein_flexibility or total_protein <= protein_limit) and 
                         total_carbs <= carb_limit and 
                         total_fats <= fat_limit):
                         
@@ -236,7 +286,26 @@ def check_meal_options(calorie_limit, protein_limit, carb_limit, fat_limit):
                         valid_meals.append(meal)
     
     end_time = time.time()
-    print(f"Generated {len(valid_meals)} meal options in {end_time - start_time:.2f} seconds")
+    execution_time = end_time - start_time
+    logger.info(f"Generated {len(valid_meals)} meal options in {execution_time:.2f} seconds")
+    logger.info(f"Parameters: cal={calorie_limit}, prot={protein_limit}, carbs={carb_limit}, fat={fat_limit}, protein_flexible={protein_flexibility}")
+    
+    # Store results in cache
+    try:
+        # Store in memory cache
+        cached_meal_options.__wrapped__(cache_key, valid_meals)
+        
+        # Store in database cache
+        if collection:
+            cache_collection = collection.database["search_cache"]
+            cache_collection.update_one(
+                {"key": cache_key},
+                {"$set": {"results": valid_meals, "created_at": datetime.now()}},
+                upsert=True
+            )
+            logger.info(f"Stored results in database cache with key: {cache_key}")
+    except Exception as e:
+        logger.error(f"Cache storage error: {e}")
     
     return valid_meals
 

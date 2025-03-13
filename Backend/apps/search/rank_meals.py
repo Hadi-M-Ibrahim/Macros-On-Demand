@@ -3,22 +3,35 @@ from .script import check_meal_options
 
 def calculate_rmse(actual, target):
     """
-    Calculate Root Mean Square Error between actual values and target values.
+    Calculate Root Mean Square Error between actual values and target values with a protein bonus.
     Lower RMSE means the meal's macros are closer to the target values.
+    Exceeding protein is rewarded rather than penalized.
     
     Args:
         actual (dict): Dictionary containing actual macro values
         target (dict): Dictionary containing target macro values
         
     Returns:
-        float: RMSE value
+        float: Modified RMSE value that rewards protein overages
     """
+    # Calculate squared errors for calories, carbs, and fats
     squared_errors = [
         (actual["calories"] - target["calories"]) ** 2,
-        (actual["protein"] - target["protein"]) ** 2,
         (actual["carbs"] - target["carbs"]) ** 2,
         (actual["fats"] - target["fats"]) ** 2
     ]
+    
+    # Special handling for protein
+    if actual["protein"] >= target["protein"]:
+        # Reward for exceeding protein target (negative error)
+        # Scale the bonus based on how much protein is exceeded, up to 25% extra
+        exceed_ratio = min((actual["protein"] - target["protein"]) / target["protein"], 0.25)
+        protein_bonus = -((target["protein"] * exceed_ratio) ** 2)
+        squared_errors.append(protein_bonus)
+    else:
+        # Normal penalty for not meeting protein target
+        protein_penalty = (actual["protein"] - target["protein"]) ** 2
+        squared_errors.append(protein_penalty * 1.5)  # Increase weight for missing protein
     
     # Calculate mean of squared errors
     mean_squared_error = sum(squared_errors) / len(squared_errors)
@@ -29,20 +42,22 @@ def calculate_rmse(actual, target):
 def rank_meal_options(calorie_limit, protein_limit, carb_limit, fat_limit):
     """
     Rank meal options based on how close they are to the target macronutrient values.
+    Prioritizes meals that meet or exceed protein targets.
     
     Args:
         calorie_limit (int): Maximum calories allowed
-        protein_limit (int): Maximum protein allowed in grams
+        protein_limit (int): Minimum protein target in grams
         carb_limit (int): Maximum carbohydrates allowed in grams
         fat_limit (int): Maximum fats allowed in grams
         
     Returns:
         list: Sorted list of meal options with ranking information
     """
-    # Get all valid meal options within the limits
+    # Get all valid meal options within the limits (protein can exceed limit)
     valid_meals = check_meal_options(calorie_limit, protein_limit, carb_limit, fat_limit)
     
     # Define target values (we want to be as close as possible to these maximums)
+    # For protein, this is a minimum target rather than a maximum
     target_macros = {
         "calories": calorie_limit,
         "protein": protein_limit,
@@ -79,7 +94,9 @@ def rank_meal_options(calorie_limit, protein_limit, carb_limit, fat_limit):
             "meal": meal,
             "rmse": rmse,
             "avg_utilization": avg_utilization,
-            "utilization": utilization
+            "utilization": utilization,
+            "protein_target_met": meal["protein"] >= protein_limit,
+            "protein_percentage": (meal["protein"] / protein_limit) * 100 if protein_limit > 0 else 0
         }
         
         ranked_meals.append(ranked_meal)
@@ -99,7 +116,7 @@ def get_top_ranked_meals(calorie_limit, protein_limit, carb_limit, fat_limit, to
     
     Args:
         calorie_limit (int): Maximum calories allowed
-        protein_limit (int): Maximum protein allowed in grams
+        protein_limit (int): Minimum protein target in grams
         carb_limit (int): Maximum carbohydrates allowed in grams
         fat_limit (int): Maximum fats allowed in grams
         top_n (int): Number of top meals to return
@@ -116,7 +133,7 @@ def get_top_ranked_meals_by_restaurant(calorie_limit, protein_limit, carb_limit,
     
     Args:
         calorie_limit (int): Maximum calories allowed
-        protein_limit (int): Maximum protein allowed in grams
+        protein_limit (int): Minimum protein target in grams
         carb_limit (int): Maximum carbohydrates allowed in grams
         fat_limit (int): Maximum fats allowed in grams
         top_n_per_restaurant (int): Number of top meals to return per restaurant
@@ -160,5 +177,6 @@ if __name__ == "__main__":
               f"{m['protein']}g protein ({meal['utilization']['protein']:.1f}%), " +
               f"{m['carbs']}g carbs ({meal['utilization']['carbs']:.1f}%), " +
               f"{m['fats']}g fats ({meal['utilization']['fats']:.1f}%)")
+        print(f"  Protein target met: {meal['protein_target_met']} ({meal['protein_percentage']:.1f}%)")
         print(f"  Food IDs: {', '.join(m['food_item_ids'])}")
         print()

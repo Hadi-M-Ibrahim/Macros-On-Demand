@@ -59,12 +59,6 @@ const ResultsScreen = ({ navigation }) => {
         // use the API service instead of direct fetch
         const response = await api.meals.getRankedMealOptions(macroGoals);
 
-        // check the response format to see what we received
-        console.log(
-          "API Response:",
-          JSON.stringify(response).substring(0, 200)
-        );
-
         // Handle both possible response formats
         let validMeals = [];
         if (response.valid_meals) {
@@ -271,51 +265,54 @@ const ResultsScreen = ({ navigation }) => {
     const currentMeal = mealOptions[index].meal;
 
     return (
-      <>
-        <Text style={styles.restaurantName}>
-          {currentMeal.restaurant || "Unknown Restaurant"}
-        </Text>
-        <View style={styles.macroContainer}>
-          <Text style={styles.macroLabel}>Calories:</Text>
-          <Text style={styles.macroValue}>{currentMeal.calories || 0}</Text>
-        </View>
-        <View style={styles.macroContainer}>
-          <Text style={styles.macroLabel}>Protein:</Text>
-          <Text style={styles.macroValue}>{currentMeal.protein || 0}g</Text>
-        </View>
-        <View style={styles.macroContainer}>
-          <Text style={styles.macroLabel}>Carbs:</Text>
-          <Text style={styles.macroValue}>{currentMeal.carbs || 0}g</Text>
-        </View>
-        <View style={styles.macroContainer}>
-          <Text style={styles.macroLabel}>Fat:</Text>
-          <Text style={styles.macroValue}>{currentMeal.fats || 0}g</Text>
+      <View style={styles.mealContentContainer}>
+        <View style={styles.mealDetailsContainer}>
+          <Text style={styles.restaurantName}>
+            {currentMeal.restaurant || "Unknown Restaurant"}
+          </Text>
+          <View style={styles.macroContainer}>
+            <Text style={styles.macroLabel}>Calories:</Text>
+            <Text style={styles.macroValue}>{currentMeal.calories || 0}</Text>
+          </View>
+          <View style={styles.macroContainer}>
+            <Text style={styles.macroLabel}>Protein:</Text>
+            <Text style={styles.macroValue}>{currentMeal.protein || 0}g</Text>
+          </View>
+          <View style={styles.macroContainer}>
+            <Text style={styles.macroLabel}>Carbs:</Text>
+            <Text style={styles.macroValue}>{currentMeal.carbs || 0}g</Text>
+          </View>
+          <View style={styles.macroContainer}>
+            <Text style={styles.macroLabel}>Fat:</Text>
+            <Text style={styles.macroValue}>{currentMeal.fats || 0}g</Text>
+          </View>
+
+          <View style={styles.foodItemsContainer}>
+            <Text style={styles.foodItemsHeader}>Items in this meal:</Text>
+            {currentMeal.item_names && currentMeal.item_names.length > 0 ? (
+              // If we have item names available, use them
+              currentMeal.item_names.map((name, i) => (
+                <Text key={i} style={styles.foodItemText}>
+                  • {name}
+                </Text>
+              ))
+            ) : currentMeal.food_item_ids &&
+              currentMeal.food_item_ids.length > 0 ? (
+              // Otherwise fall back to item IDs
+              currentMeal.food_item_ids.map((id, i) => (
+                <Text key={i} style={styles.foodItemText}>
+                  • Item {i + 1}
+                </Text>
+              ))
+            ) : (
+              <Text style={styles.foodItemText}>
+                • No items information available
+              </Text>
+            )}
+          </View>
         </View>
 
-        <View style={styles.foodItemsContainer}>
-          <Text style={styles.foodItemsHeader}>Items in this meal:</Text>
-          {currentMeal.item_names && currentMeal.item_names.length > 0 ? (
-            // If we have item names available, use them
-            currentMeal.item_names.map((name, i) => (
-              <Text key={i} style={styles.foodItemText}>
-                • {name}
-              </Text>
-            ))
-          ) : currentMeal.food_item_ids &&
-            currentMeal.food_item_ids.length > 0 ? (
-            // Otherwise fall back to item IDs
-            currentMeal.food_item_ids.map((id, i) => (
-              <Text key={i} style={styles.foodItemText}>
-                • Item {i + 1}
-              </Text>
-            ))
-          ) : (
-            <Text style={styles.foodItemText}>
-              • No items information available
-            </Text>
-          )}
-        </View>
-
+        {/* Nav Help Container is now positioned at the bottom of the card */}
         <View style={styles.navHelpContainer}>
           <Text style={styles.swipeText}>
             Swipe to see more options ({index + 1}/{mealOptions.length})
@@ -324,7 +321,7 @@ const ResultsScreen = ({ navigation }) => {
             Tip: Use ← to skip, → to save
           </Text>
         </View>
-      </>
+      </View>
     );
   };
 
@@ -418,6 +415,15 @@ const styles = StyleSheet.create({
     shadowRadius: 6,
     elevation: 5,
   },
+  // Container for all meal content with flex layout
+  mealContentContainer: {
+    flex: 1,
+    justifyContent: "space-between", // This pushes the nav help to the bottom
+  },
+  // Container for scrollable meal details
+  mealDetailsContainer: {
+    flex: 1,
+  },
   loaderContainer: {
     flex: 1,
     justifyContent: "center",
@@ -508,8 +514,11 @@ const styles = StyleSheet.create({
     color: "#4A2040",
     marginBottom: 4,
   },
+  // Nav help container is now positioned at the bottom of the card
   navHelpContainer: {
-    marginTop: 10,
+    paddingTop: 10,
+    paddingBottom: 5,
+    marginTop: "auto", // This pushes it to the bottom
   },
   swipeText: {
     fontFamily: "Poppins_400Regular",

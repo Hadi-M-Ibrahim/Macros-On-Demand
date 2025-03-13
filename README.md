@@ -4,6 +4,8 @@ A React Native-based app that finds the nutritionally closest fast-food item to 
 
 # Run Instructions
 
+# Backend
+
 Backend requires Python 3.12.8.
 
 ## Step 1: Clone the Repository
@@ -63,3 +65,15 @@ will now be available at:
 http://127.0.0.1:8000/
 
 If the backend does not run properly on **UCLA WiFi**, you may need to switch to a **hotspot** or another **network**.
+
+# Frontend
+
+## Step 1: Install required packages
+
+Ensure that Node.js is installed. Then, move to the Frontend directory with `cd Frontend`.
+
+Run `npm install` to install required packages.
+
+## Step 2: Start the app
+
+In the Frontend directory, run `npm start`. Access the app at http://localhost:8081

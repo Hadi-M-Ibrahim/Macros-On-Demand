@@ -22,10 +22,24 @@ const SavedMeals = ({ navigation }) => {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState(null);
   const [searchQuery, setSearchQuery] = useState("");
+  const [searchMode, setSearchMode] = useState("restaurant");
 
-  const filteredMeals = meals.filter(item =>
-    item.meal.restaurant.toLowerCase().includes(searchQuery.toLowerCase())
-  );
+  
+  const filteredMeals = meals.filter((item) => {
+    if (searchMode === "restaurant") {
+      return item.meal.restaurant
+        .toLowerCase()
+        .includes(searchQuery.toLowerCase());
+    } else if (searchMode === "food") {
+      return (
+        item.food_items &&
+        item.food_items.some((foodItem) =>
+          foodItem.item_name.toLowerCase().includes(searchQuery.toLowerCase())
+        )
+      );
+    }
+    return true;
+  });
 
   const fetchSavedMeals = async () => {
     try {
@@ -51,8 +65,8 @@ const SavedMeals = ({ navigation }) => {
   const deleteMeal = async (mealId) => {
     try {
       await api.meals.deleteMeal(mealId);
-      setMeals(prevMeals =>
-        prevMeals.filter(item => item.meal.id !== mealId)
+      setMeals((prevMeals) =>
+        prevMeals.filter((item) => item.meal.id !== mealId)
       );
       Alert.alert("Success", "Meal deleted successfully.");
     } catch (error) {
@@ -86,9 +100,9 @@ const SavedMeals = ({ navigation }) => {
         </View>
         <Text style={styles.itemsHeader}>Food Items:</Text>
         {food_items && food_items.length > 0 ? (
-          food_items.map((item, index) => (
+          food_items.map((foodItem, index) => (
             <Text key={index} style={styles.foodItem}>
-              • {item.item_name}
+              • {foodItem.item_name}
             </Text>
           ))
         ) : (
@@ -124,16 +138,60 @@ const SavedMeals = ({ navigation }) => {
       >
         <Ionicons name="arrow-back" size={30} color="white" />
       </TouchableOpacity>
-      
+
       <Text style={styles.header}>Saved Meals</Text>
+      
+      {/* Search by label */}
+      <Text style={styles.searchLabel}>Search by:</Text>
+
+      {/* Search Mode Toggle */}
+      <View style={styles.searchToggleContainer}>
+        <TouchableOpacity
+          style={[
+            styles.searchToggleButton,
+            searchMode === "restaurant" && styles.activeToggle,
+          ]}
+          onPress={() => setSearchMode("restaurant")}
+        >
+          <Text
+            style={[
+              styles.searchToggleText,
+              searchMode === "restaurant" && styles.activeToggleText,
+            ]}
+          >
+            Restaurant
+          </Text>
+        </TouchableOpacity>
+        <TouchableOpacity
+          style={[
+            styles.searchToggleButton,
+            searchMode === "food" && styles.activeToggle,
+          ]}
+          onPress={() => setSearchMode("food")}
+        >
+          <Text
+            style={[
+              styles.searchToggleText,
+              searchMode === "food" && styles.activeToggleText,
+            ]}
+          >
+            Food Items
+          </Text>
+        </TouchableOpacity>
+      </View>
+
       <TextInput
         style={styles.searchBar}
-        placeholder="Search by restaurant"
+        placeholder={
+          searchMode === "restaurant"
+            ? "Search by restaurant"
+            : "Search by food items"
+        }
         placeholderTextColor="#888"
         value={searchQuery}
         onChangeText={setSearchQuery}
       />
-      
+
       {isLoading ? (
         <View style={styles.centerContainer}>
           <ActivityIndicator size="large" color="white" />
@@ -202,6 +260,39 @@ const styles = StyleSheet.create({
     marginTop: 70,
     marginBottom: 20,
   },
+  searchLabel: {
+    textAlign: "center",
+    fontFamily: "Poppins_400Regular",
+    fontSize: 16,
+    color: "#fff",
+    marginHorizontal: 15,
+    marginBottom: 5,
+  },
+  searchToggleContainer: {
+    flexDirection: "row",
+    justifyContent: "center",
+    marginHorizontal: 15,
+    marginBottom: 10,
+  },
+  searchToggleButton: {
+    height: 20,
+    paddingHorizontal: 10,
+    borderRadius: 5,
+    backgroundColor: "#ccc",
+    marginHorizontal: 5,
+    justifyContent: "center",
+    alignItems: "center",
+  },
+  activeToggle: {
+    backgroundColor: "#9F6BA0",
+  },
+  searchToggleText: {
+    color: "#4A2040",
+    fontFamily: "Poppins_400Regular",
+  },
+  activeToggleText: {
+    color: "white",
+  },
   searchBar: {
     height: 40,
     borderColor: "#ccc",
@@ -213,7 +304,7 @@ const styles = StyleSheet.create({
     backgroundColor: "white",
     color: "#4A2040",
     fontFamily: "Poppins_400Regular",
-    zIndex: 2, // ensure it's on top
+    zIndex: 2,
   },
   listContainer: {
     paddingHorizontal: 15,

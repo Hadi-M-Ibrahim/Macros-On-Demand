@@ -66,7 +66,7 @@ const SignUpScreen = ({ navigation }) => {
 
         // Wait briefly then redirect to login
         setTimeout(() => {
-          navigation.navigate("Login");
+          navigation.navigate("Login", { email: email });
         }, 1500);
         return;
       }
@@ -112,7 +112,7 @@ const SignUpScreen = ({ navigation }) => {
 
         // Wait briefly then redirect to login
         setTimeout(() => {
-          navigation.navigate("Login");
+          navigation.navigate("Login", { email: email });
         }, 1500);
       } else {
         setError(error.message || "Signup failed. Please try again.");
@@ -190,6 +190,8 @@ const SignUpScreen = ({ navigation }) => {
               onChangeText={setEmail}
               padding={isSmallScreen ? "$1" : "$2"}
               style={{ ...(isSmallScreen && { marginBottom: 20 }) }}
+              autoCapitalize="none"
+              keyboardType="email-address"
             />
           </Stack>
 

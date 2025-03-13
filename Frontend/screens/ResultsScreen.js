@@ -20,6 +20,9 @@ import { Ionicons } from "@expo/vector-icons";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import api from "../services/api";
 
+const { width, height } = Dimensions.get("window");
+const isSmallScreen = height < 750;
+
 const ResultsScreen = ({ navigation }) => {
   const [index, setIndex] = useState(0);
   const [isLoading, setIsLoading] = useState(true);
@@ -29,8 +32,6 @@ const ResultsScreen = ({ navigation }) => {
   const [showSecondLoadingMessage, setShowSecondLoadingMessage] =
     useState(false);
   const translateX = useRef(new Animated.Value(0)).current;
-
-  const { width, height } = Dimensions.get("window");
 
   // Show secondary loading message after 5 seconds
   useEffect(() => {
@@ -377,31 +378,29 @@ const ResultsScreen = ({ navigation }) => {
   );
 };
 
-const { width, height } = Dimensions.get("window");
-
 const styles = StyleSheet.create({
   container: {
     flex: 1,
     justifyContent: "flex-start",
-    paddingTop: 50, // Slightly reduced to position card better
+    paddingTop: isSmallScreen ? 20 : 50,
     alignItems: "center",
     overflow: "hidden",
   },
   appTitle: {
     fontFamily: "Poppins_400Regular",
-    fontSize: 36,
+    fontSize: isSmallScreen ? 27 : 36,
     fontWeight: "bold",
     color: "white",
     textAlign: "center",
-    marginTop: 45,
+    marginTop: isSmallScreen ? 80 : 45,
   },
   headerTitle: {
     fontFamily: "Poppins_400Regular",
     fontSize: 20,
     color: "white",
     textAlign: "center",
-    marginTop: 2,
-    marginBottom: 15,
+    marginTop: isSmallScreen ? 7 : 2,
+    marginBottom: isSmallScreen ? 2 : 15,
   },
   box: {
     backgroundColor: "white",
@@ -546,13 +545,15 @@ const styles = StyleSheet.create({
     zIndex: 10,
   },
   swipeIconContainer: {
-    position: "absolute",
-    bottom: 30,
-    left: 0,
-    right: 0,
+    position: isSmallScreen ? undefined : "absolute",
+    bottom: isSmallScreen ? undefined : 30,
+    left: isSmallScreen ? undefined : 0,
+    right: isSmallScreen ? undefined : 0,
     flexDirection: "row",
-    justifyContent: "space-around",
-    alignItems: "center",
+    justifyContent: isSmallScreen ? "center" : "space-around",
+
+    alignItems: isSmallScreen ? "center" : undefined,
+    marginBottom: isSmallScreen ? 2 : undefined,
   },
   iconButton: {
     padding: 10,

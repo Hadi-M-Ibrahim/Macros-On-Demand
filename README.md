@@ -61,3 +61,5 @@ python manage.py runserver
 
 will now be available at:
 http://127.0.0.1:8000/
+
+If the backend does not run properly on **UCLA WiFi**, you may need to switch to a **hotspot** or another **network**.

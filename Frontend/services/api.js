@@ -8,9 +8,9 @@ const apiCache = {
   rankedMealOptions: {},
   savedMeals: null,
   userDetails: null,
+  userPreferences: {},
   cacheExpiry: {},
-  // Default cache expiration time (15 minutes in milliseconds)
-  DEFAULT_CACHE_TIME: 15 * 60 * 1000,
+  DEFAULT_CACHE_TIME: 15 * 60 * 1000, //15 min
 };
 
 // Helper function to create cache keys from parameters

@@ -5,7 +5,10 @@ package-lock.json
 package.json
 
 .env
+*.env
 
 __pycache__/
 *.py[cod]
 *$py.class
+
+app.yaml

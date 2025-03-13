@@ -2,7 +2,7 @@ runtime: python39
 
 env_variables:
   DJANGO_SETTINGS_MODULE: "macrosondemand.settings"
-  DJANGO_ALLOWED_HOSTS: ".appspot.com,34.169.212.24,34.82.71.163,localhost,127.0.0.1"
+  DJANGO_ALLOWED_HOSTS: ".appspot.com,35.185.248.192,34.169.212.24,34.82.71.163,localhost,127.0.0.1"
   MONGODB_URI: "mongodb+srv://dev_user:lebronjames69@mod.k0iik.mongodb.net/MODdb?retryWrites=true&w=majority&appName=MOD"
 
 handlers:

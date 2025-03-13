@@ -9,6 +9,7 @@ import {
   ActivityIndicator,
   Alert,
   ScrollView,
+  Dimensions,
 } from "react-native";
 import { useNavigation } from "@react-navigation/native";
 import { LinearGradient } from "@tamagui/linear-gradient";
@@ -38,6 +39,7 @@ const InputScreen = () => {
     Poppins_400Regular,
   });
 
+  
   // Check if user is logged in
   useEffect(() => {
     const checkLoginStatus = async () => {
@@ -210,6 +212,8 @@ const InputScreen = () => {
     return <ActivityIndicator size="large" color="#0000ff" />;
   }
 
+  
+
   return (
     <ScrollView contentContainerStyle={{ flexGrow: 1 }}>
       <View style={styles.container}>
@@ -227,12 +231,14 @@ const InputScreen = () => {
           <Ionicons name="arrow-back" size={30} color="white" />
         </TouchableOpacity>
 
+        <View style={isSmallScreen ? styles.cardWrapper : styles.container}>
         <Card
           elevate
           size="$4"
           bordered
           padding="$6"
           width={"80%"}
+          height={isSmallScreen ? height * 0.8 : "auto"}
           backgroundColor="white"
           borderWidth={0}
           shadowColor="rgba(0, 0, 0, 0.1)"
@@ -319,11 +325,15 @@ const InputScreen = () => {
             </TouchableOpacity>
           </YStack>
         </Card>
+        </View>
       </View>
     </ScrollView>
   );
 };
 
+const { width, height } = Dimensions.get("window");
+const isSmallScreen = height < 700;
+  
 const styles = StyleSheet.create({
   background: {
     position: "absolute",
@@ -334,6 +344,13 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: "center",
     alignItems: "center",
+    width: "100%",
+  },
+  cardWrapper: {
+    marginTop: 50,
+    alignItems: "center",
+    width: "100%",
+    justifyContent:"center",
   },
   backButton: {
     position: "absolute",
@@ -342,10 +359,10 @@ const styles = StyleSheet.create({
     zIndex: 10,
   },
   title: {
-    fontSize: 24,
+    fontSize: isSmallScreen ? 18 : 24,
     fontWeight: "bold",
     color: "#4A2040",
-    marginBottom: 20,
+    marginBottom: isSmallScreen ? 0 : 20,
     fontFamily: "Poppins_400Regular",
   },
   inputContainer: {
@@ -354,8 +371,8 @@ const styles = StyleSheet.create({
   },
   label: {
     color: "#4A2040",
-    fontSize: 18,
-    marginBottom: 5,
+    fontSize: isSmallScreen ? 12 : 18,
+    marginBottom: isSmallScreen ? 1 : 5,
     fontFamily: "Poppins_400Regular",
   },
   input: {
@@ -384,13 +401,13 @@ const styles = StyleSheet.create({
     padding: 16,
     width: "100%",
     borderRadius: 16,
-    marginTop: 16,
+    marginTop: isSmallScreen ? 6 : 16,
     alignItems: "center",
   },
   buttonText: {
     fontFamily: "Poppins_400Regular",
     color: "white",
-    fontSize: 16,
+    fontSize: isSmallScreen ? 12 : 16,
   },
 });
 

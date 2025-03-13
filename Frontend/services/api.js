@@ -2,6 +2,68 @@ import AsyncStorage from "@react-native-async-storage/async-storage";
 
 const API_BASE_URL = "http://35.185.248.192:8000/api";
 
+// In-memory cache for API responses
+const apiCache = {
+  mealOptions: {},
+  rankedMealOptions: {},
+  savedMeals: null,
+  userDetails: null,
+  cacheExpiry: {},
+  // Default cache expiration time (15 minutes in milliseconds)
+  DEFAULT_CACHE_TIME: 15 * 60 * 1000,
+};
+
+// Helper function to create cache keys from parameters
+const createCacheKey = (params) => {
+  return Object.entries(params)
+    .sort((a, b) => a[0].localeCompare(b[0]))
+    .map(([key, value]) => `${key}:${value}`)
+    .join("|");
+};
+
+// Helper function to check if cache is valid
+const isCacheValid = (cacheKey) => {
+  if (!apiCache.cacheExpiry[cacheKey]) return false;
+  return apiCache.cacheExpiry[cacheKey] > Date.now();
+};
+
+// Helper function to add item to cache with expiration
+const addToCache = (cacheType, cacheKey, data, expiryTime = null) => {
+  apiCache[cacheType][cacheKey] = data;
+  apiCache.cacheExpiry[cacheKey] =
+    Date.now() + (expiryTime || apiCache.DEFAULT_CACHE_TIME);
+
+  // Log cache activity in development
+  if (__DEV__) {
+    console.log(`[API Cache] Added to ${cacheType} cache: ${cacheKey}`);
+  }
+};
+
+// Helper function to clear specific cache
+const clearCache = (cacheType = null) => {
+  if (cacheType) {
+    apiCache[cacheType] = {};
+    // Only clear expiry entries for this cache type
+    Object.keys(apiCache.cacheExpiry).forEach((key) => {
+      if (key.startsWith(`${cacheType}:`)) {
+        delete apiCache.cacheExpiry[key];
+      }
+    });
+  } else {
+    // Clear all caches
+    Object.keys(apiCache).forEach((key) => {
+      if (typeof apiCache[key] === "object") {
+        apiCache[key] = {};
+      }
+    });
+    apiCache.cacheExpiry = {};
+  }
+
+  if (__DEV__) {
+    console.log(`[API Cache] Cleared ${cacheType || "all"} cache`);
+  }
+};
+
 // Helper function to handle API responses
 const handleResponse = async (response) => {
   const data = await response.json();
@@ -69,7 +131,12 @@ const api = {
           },
           body: JSON.stringify(userData),
         });
-        return handleResponse(response);
+        const data = await handleResponse(response);
+
+        // Clear caches when user registers
+        clearCache();
+
+        return data;
       } catch (error) {
         console.error("Registration error:", error);
         throw error;
@@ -110,24 +177,58 @@ const api = {
           },
           body: JSON.stringify(credentials),
         });
-        return handleResponse(response);
+        const data = await handleResponse(response);
+
+        // Clear caches when user logs in
+        clearCache();
+
+        return data;
       } catch (error) {
         console.error("Login error:", error);
         throw error;
       }
     },
 
-    // Get user details
+    // Get user details with caching
     getUserDetails: async () => {
       try {
+        // Check cache first
+        if (apiCache.userDetails && isCacheValid("userDetails")) {
+          if (__DEV__) console.log("[API Cache] Using cached user details");
+          return apiCache.userDetails;
+        }
+
         const headers = await getAuthHeaders();
         const response = await fetch(`${API_BASE_URL}/auth/user/`, {
           method: "GET",
           headers,
         });
-        return handleResponse(response);
+        const data = await handleResponse(response);
+
+        // Cache the user details
+        apiCache.userDetails = data;
+        addToCache("userDetails", "userDetails", data, 5 * 60 * 1000); // 5 minute cache
+
+        return data;
       } catch (error) {
         console.error("Get user details error:", error);
+        throw error;
+      }
+    },
+
+    // Logout
+    logout: async () => {
+      try {
+        // Clear tokens from AsyncStorage
+        await AsyncStorage.removeItem("accessToken");
+        await AsyncStorage.removeItem("refreshToken");
+
+        // Clear all caches when user logs out
+        clearCache();
+
+        return { success: true };
+      } catch (error) {
+        console.error("Logout error:", error);
         throw error;
       }
     },
@@ -138,12 +239,24 @@ const api = {
     // Get user's macro preferences
     getPreferences: async () => {
       try {
+        // Check cache first - shorter cache time for preferences
+        const cacheKey = "userPreferences";
+        if (apiCache.userPreferences && isCacheValid(cacheKey)) {
+          if (__DEV__) console.log("[API Cache] Using cached preferences");
+          return apiCache.userPreferences;
+        }
+
         const headers = await getAuthHeaders();
         const response = await fetch(`${API_BASE_URL}/auth/preferences/`, {
           method: "GET",
           headers,
         });
-        return handleResponse(response);
+        const data = await handleResponse(response);
+
+        // Cache the preferences
+        addToCache("userPreferences", cacheKey, data, 5 * 60 * 1000); // 5 minute cache
+
+        return data;
       } catch (error) {
         console.error("Get preferences error:", error);
         throw error;
@@ -159,7 +272,16 @@ const api = {
           headers,
           body: JSON.stringify(preferences),
         });
-        return handleResponse(response);
+        const data = await handleResponse(response);
+
+        // Update cache with new preferences
+        addToCache("userPreferences", "userPreferences", data);
+
+        // Clear meal options cache since preferences changed
+        clearCache("mealOptions");
+        clearCache("rankedMealOptions");
+
+        return data;
       } catch (error) {
         console.error("Update preferences error:", error);
         throw error;
@@ -169,14 +291,35 @@ const api = {
 
   // meal endpoints
   meals: {
-    // Get meal options based on macro goals
+    // Get meal options based on macro goals with caching
     getMealOptions: async (macroGoals) => {
       try {
+        // Create a cache key from the macro goals
+        const macroParams = {
+          calories: macroGoals.calories || 0,
+          protein: macroGoals.protein || 0,
+          carbs: macroGoals.carbs || 0,
+          fats: macroGoals.fats || 0,
+          protein_flexible: macroGoals.protein_flexible || false,
+        };
+        const cacheKey = createCacheKey(macroParams);
+
+        // Check if we have cached results
+        if (
+          apiCache.mealOptions[cacheKey] &&
+          isCacheValid(`mealOptions:${cacheKey}`)
+        ) {
+          if (__DEV__) console.log("[API Cache] Using cached meal options");
+          return apiCache.mealOptions[cacheKey];
+        }
+
+        // If not in cache, make the API call
         const queryParams = new URLSearchParams({
           calories: macroGoals.calories || "",
           protein: macroGoals.protein || "",
           carbs: macroGoals.carbs || "",
           fats: macroGoals.fats || "",
+          protein_flexible: macroGoals.protein_flexible || false,
         }).toString();
 
         const token = await AsyncStorage.getItem("accessToken");
@@ -194,21 +337,50 @@ const api = {
             headers,
           }
         );
-        return handleResponse(response);
+        const data = await handleResponse(response);
+
+        // Store in cache
+        addToCache("mealOptions", cacheKey, data);
+
+        return data;
       } catch (error) {
         console.error("Get meal options error:", error);
         throw error;
       }
     },
 
-    // get ranked meal options
+    // get ranked meal options with caching
     getRankedMealOptions: async (macroGoals) => {
       try {
+        // Create a cache key from the macro goals
+        const macroParams = {
+          calories: macroGoals.calories || 0,
+          protein: macroGoals.protein || 0,
+          carbs: macroGoals.carbs || 0,
+          fats: macroGoals.fats || 0,
+          protein_bonus: macroGoals.protein_bonus !== false, // default to true
+          protein_flexible: macroGoals.protein_flexible || false,
+        };
+        const cacheKey = createCacheKey(macroParams);
+
+        // Check if we have cached results
+        if (
+          apiCache.rankedMealOptions[cacheKey] &&
+          isCacheValid(`rankedMealOptions:${cacheKey}`)
+        ) {
+          if (__DEV__)
+            console.log("[API Cache] Using cached ranked meal options");
+          return apiCache.rankedMealOptions[cacheKey];
+        }
+
+        // If not in cache, make the API call
         const queryParams = new URLSearchParams({
           calories: macroGoals.calories || "",
           protein: macroGoals.protein || "",
           carbs: macroGoals.carbs || "",
           fats: macroGoals.fats || "",
+          protein_bonus: macroGoals.protein_bonus !== false ? "true" : "false",
+          protein_flexible: macroGoals.protein_flexible ? "true" : "false",
         }).toString();
 
         const token = await AsyncStorage.getItem("accessToken");
@@ -226,7 +398,12 @@ const api = {
             headers,
           }
         );
-        return handleResponse(response);
+        const data = await handleResponse(response);
+
+        // Store in cache
+        addToCache("rankedMealOptions", cacheKey, data);
+
+        return data;
       } catch (error) {
         console.error("Get ranked meal options error:", error);
         throw error;
@@ -242,22 +419,38 @@ const api = {
           headers,
           body: JSON.stringify(mealData),
         });
-        return handleResponse(response);
+        const data = await handleResponse(response);
+
+        // Clear saved meals cache when adding a new meal
+        clearCache("savedMeals");
+
+        return data;
       } catch (error) {
         console.error("Save meal error:", error);
         throw error;
       }
     },
 
-    // get saved meals
+    // get saved meals with caching
     getSavedMeals: async () => {
       try {
+        // Check cache first
+        if (apiCache.savedMeals && isCacheValid("savedMeals")) {
+          if (__DEV__) console.log("[API Cache] Using cached saved meals");
+          return apiCache.savedMeals;
+        }
+
         const headers = await getAuthHeaders();
         const response = await fetch(`${API_BASE_URL}/auth/saved-meals/`, {
           method: "GET",
           headers,
         });
-        return handleResponse(response);
+        const data = await handleResponse(response);
+
+        // Cache the saved meals
+        addToCache("savedMeals", "savedMeals", data);
+
+        return data;
       } catch (error) {
         console.error("Get saved meals error:", error);
         throw error;
@@ -275,11 +468,28 @@ const api = {
             headers,
           }
         );
-        return handleResponse(response);
+        const data = await handleResponse(response);
+
+        // Clear saved meals cache when deleting a meal
+        clearCache("savedMeals");
+
+        return data;
       } catch (error) {
         console.error("Delete meal error:", error);
         throw error;
       }
+    },
+  },
+
+  // Cache control functions exposed for component use
+  cache: {
+    clearAll: () => clearCache(),
+    clearMealOptions: () => clearCache("mealOptions"),
+    clearRankedMealOptions: () => clearCache("rankedMealOptions"),
+    clearSavedMeals: () => clearCache("savedMeals"),
+    clearUserData: () => {
+      clearCache("userDetails");
+      clearCache("userPreferences");
     },
   },
 };

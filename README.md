@@ -1,3 +1,6 @@
+NOTE: IF LOOKING FOR FILES TO GRADE GO INTO THE GRADING BRANCH https://github.com/Hadi-M-Ibrahim/Macros-On-Demand/tree/gradeing
+this branch is functional
+
 # Macros-On-Demand (MoD)
 
 A **React Native** app that finds the **nutritionally closest fast-food item** to an ideal food item.

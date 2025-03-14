@@ -100,3 +100,4 @@ Access the app at **http://localhost:8081**.
 
 - If you're running both **frontend and backend locally**, make sure the **IP addresses in `api.js` are correctly configured**.
 - The **GCP VM backend** is always available, so running it locally is _optional_.
+- **API Keys:** Stored in the `.env` files. While we acknowledge this isn't best practice, and we have added `.env` to `.gitignore`. For ease of grading and local execution, we have temporarily included them in the repository.

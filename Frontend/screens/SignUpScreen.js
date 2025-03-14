@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import {
   StyleSheet,
   TouchableOpacity,
@@ -6,6 +6,7 @@ import {
   Alert,
   ActivityIndicator,
   Dimensions,
+  Animated,
 } from "react-native";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { Button, Input, Stack, Text, YStack, Card } from "tamagui";
@@ -20,14 +21,64 @@ const SignUpScreen = ({ navigation }) => {
   const [error, setError] = useState("");
   const [isLoading, setIsLoading] = useState(false);
 
+  // Password validation
+  const [isPasswordLongEnough, setIsPasswordLongEnough] = useState(false);
+  const [passwordsMatch, setPasswordsMatch] = useState(false);
+  const fadeAnim = useRef(new Animated.Value(0)).current;
+  const fadeMatchAnim = useRef(new Animated.Value(0)).current;
+
   const [fontsLoaded] = useFonts({
     Poppins_400Regular,
   });
+
+  // Check password length whenever it changes
+  useEffect(() => {
+    const isLongEnough = password.length >= 8;
+    setIsPasswordLongEnough(isLongEnough);
+
+    // Fade in/out the message based on whether user has started typing a password
+    if (password.length > 0) {
+      Animated.timing(fadeAnim, {
+        toValue: 1,
+        duration: 200,
+        useNativeDriver: true,
+      }).start();
+    } else {
+      Animated.timing(fadeAnim, {
+        toValue: 0,
+        duration: 200,
+        useNativeDriver: true,
+      }).start();
+    }
+  }, [password]);
+
+  // Check if passwords match whenever either password field changes
+  useEffect(() => {
+    setPasswordsMatch(
+      password === confirmPassword && confirmPassword.length > 0
+    );
+
+    // Show match message only when user has started typing in confirm password field
+    if (confirmPassword.length > 0) {
+      Animated.timing(fadeMatchAnim, {
+        toValue: 1,
+        duration: 200,
+        useNativeDriver: true,
+      }).start();
+    } else {
+      Animated.timing(fadeMatchAnim, {
+        toValue: 0,
+        duration: 200,
+        useNativeDriver: true,
+      }).start();
+    }
+  }, [password, confirmPassword]);
 
   // loading indicator until fonts load
   if (!fontsLoaded) {
     return <ActivityIndicator size="large" color="#0000ff" />;
   }
+
   // validate email with regex
   const validateEmail = (email) => {
     const regex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
@@ -48,14 +99,25 @@ const SignUpScreen = ({ navigation }) => {
   const onSignUp = async () => {
     // Clear previous errors
     setError("");
-    setIsLoading(true);
 
-    //  check if email is valid
+    // Check if email is valid
     if (!validateEmail(email)) {
       setError("Please enter a valid email address.");
-      setIsLoading(false);
       return;
     }
+
+    // Check if password is long enough
+    if (password.length < 8) {
+      setError("Password must be at least 8 characters long.");
+      return;
+    }
+
+    if (password !== confirmPassword) {
+      setError("Passwords do not match.");
+      return;
+    }
+
+    setIsLoading(true);
 
     // check if email exists
     try {
@@ -73,19 +135,6 @@ const SignUpScreen = ({ navigation }) => {
     } catch (error) {
       console.error("Error checking email:", error);
       // Continue with registration attempt even if email check fails
-    }
-
-    if (password !== confirmPassword) {
-      setError("Passwords do not match.");
-      setIsLoading(false);
-      return;
-    }
-
-    if (password.length < 8) {
-      //8 char is reccomended minimum as per https://pages.nist.gov/800-63-3/sp800-63b.html#sec5
-      setError("Password must be at least 8 characters long.");
-      setIsLoading(false);
-      return;
     }
 
     try {
@@ -121,6 +170,7 @@ const SignUpScreen = ({ navigation }) => {
       setIsLoading(false);
     }
   };
+
   const { width, height } = Dimensions.get("window");
   const isSmallScreen = height < 750;
 
@@ -138,7 +188,6 @@ const SignUpScreen = ({ navigation }) => {
         bordered
         padding={isSmallScreen ? "$1" : "$6"}
         width={width * 0.8}
-        // removed fixed height to allow card to expand with content
         backgroundColor="white"
         borderWidth={0}
         shadowColor="rgba(0, 0, 0, 0.1)"
@@ -208,8 +257,32 @@ const SignUpScreen = ({ navigation }) => {
               secureTextEntry
               onChangeText={setPassword}
               padding={isSmallScreen ? "$1" : "$2"}
-              style={{ ...(isSmallScreen && { marginBottom: 20 }) }}
+              style={{ ...(isSmallScreen && { marginBottom: 0 }) }}
             />
+
+            {/* Simple password length indicator that fades in with no extra spacing */}
+            <Animated.View
+              style={{
+                opacity: fadeAnim,
+                height: 20,
+                marginBottom: 0,
+                position: "absolute",
+                bottom: -20,
+                left: 0,
+              }}
+            >
+              <Text
+                style={{
+                  fontSize: 12,
+                  color: isPasswordLongEnough ? "#4CAF50" : "#FF6961",
+                  fontFamily: "Poppins_400Regular",
+                }}
+              >
+                {isPasswordLongEnough
+                  ? "✓ Password length valid"
+                  : "× Password must be at least 8 characters"}
+              </Text>
+            </Animated.View>
           </Stack>
 
           <Stack width="100%">
@@ -225,17 +298,48 @@ const SignUpScreen = ({ navigation }) => {
               secureTextEntry
               onChangeText={setConfirmPassword}
               padding={isSmallScreen ? "$1" : "$2"}
-              style={{ ...(isSmallScreen && { marginBottom: 20 }) }}
+              style={{ ...(isSmallScreen && { marginBottom: 0 }) }}
             />
+
+            {/* Password matching indicator */}
+            <Animated.View
+              style={{
+                opacity: fadeMatchAnim,
+                height: 20,
+                marginBottom: 0,
+                position: "absolute",
+                bottom: -20,
+                left: 0,
+              }}
+            >
+              <Text
+                style={{
+                  fontSize: 12,
+                  color: passwordsMatch ? "#4CAF50" : "#FF6961",
+                  fontFamily: "Poppins_400Regular",
+                }}
+              >
+                {passwordsMatch
+                  ? "✓ Passwords match"
+                  : "× Passwords don't match"}
+              </Text>
+            </Animated.View>
           </Stack>
 
           <TouchableOpacity
             style={[
               styles.button,
               isSmallScreen && { paddingVertical: 8, paddingHorizontal: 12 },
+              ((password.length > 0 && !isPasswordLongEnough) ||
+                (confirmPassword.length > 0 && !passwordsMatch)) &&
+                styles.disabledButton,
             ]}
             onPress={onSignUp}
-            disabled={isLoading}
+            disabled={
+              isLoading ||
+              (password.length > 0 && !isPasswordLongEnough) ||
+              (confirmPassword.length > 0 && !passwordsMatch)
+            }
           >
             {isLoading ? (
               <ActivityIndicator color="white" />
@@ -248,6 +352,7 @@ const SignUpScreen = ({ navigation }) => {
             style={{
               backgroundColor: "transparent",
               alignSelf: "center",
+              marginTop: 20, // Add space to accommodate the password match message
             }}
             onPress={() => navigation.navigate("Login")}
           >
@@ -294,6 +399,9 @@ const styles = StyleSheet.create({
     borderRadius: 16,
     marginTop: 16,
     alignItems: "center",
+  },
+  disabledButton: {
+    backgroundColor: "#ccaac7", // Lighter purple for disabled state
   },
   buttonText: {
     fontFamily: "Poppins_400Regular",

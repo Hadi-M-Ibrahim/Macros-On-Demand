@@ -19,6 +19,7 @@ from django.contrib import admin
 from django.urls import include, path
 from django.shortcuts import redirect
 from apps.search.views import meal_options_view, save_meal_view, ranked_meal_options_view
+from apps.accounts.views import GoogleLoginView, GoogleCallbackView
 
 def home_redirect(request):
     return redirect('/api/auth/signup/')  # Redirect to the sign-in page
@@ -30,4 +31,6 @@ urlpatterns = [
     path('api/search/meal-options/', meal_options_view, name='meal-options'),
     path('api/search/save-meal/', save_meal_view, name='save-meal'),
     path('api/search/ranked-meals/', ranked_meal_options_view, name='ranked-meals'),
+    path('login/google/', GoogleLoginView.as_view(), name='google_login'),
+    path('callback/google/', GoogleCallbackView.as_view(), name='google_callback'),
 ]

@@ -1,3 +1,6 @@
+**Note: This branch is for grading purposes only w/o generated files the code will not run; to run the code please see main:** https://github.com/Hadi-M-Ibrahim/Macros-On-Demand/tree/main
+
+
 # Macros-On-Demand (MoD)
 
 A **React Native** app that finds the **nutritionally closest fast-food item** to an ideal food item.

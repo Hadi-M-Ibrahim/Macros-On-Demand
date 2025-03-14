@@ -273,14 +273,14 @@ const SignUpScreen = ({ navigation }) => {
             >
               <Text
                 style={{
-                  fontSize: 12,
+                  fontSize: isSmallScreen ? 10 : 12,
                   color: isPasswordLongEnough ? "#4CAF50" : "#FF6961",
                   fontFamily: "Poppins_400Regular",
                 }}
               >
                 {isPasswordLongEnough
                   ? "✓ Password length valid"
-                  : "× Password must be at least 8 characters"}
+                  : "× Password must be 8+ characters"}
               </Text>
             </Animated.View>
           </Stack>

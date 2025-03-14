@@ -462,6 +462,10 @@ const styles = StyleSheet.create({
     left: 20,
     zIndex: 10,
   },
+  searchContainer: {
+    alignItems: "center",
+    marginBottom: 20,
+  }
 });
 
 export default SavedMeals;

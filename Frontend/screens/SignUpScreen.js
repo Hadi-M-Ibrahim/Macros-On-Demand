@@ -108,7 +108,7 @@ const SignUpScreen = ({ navigation }) => {
         // Short delay before navigation to let the user see the toast
         setTimeout(() => {
           navigation.navigate("Login", { email: emailToCheck });
-        }, 500);
+        }, 750);
       } else {
         hideToast();
       }

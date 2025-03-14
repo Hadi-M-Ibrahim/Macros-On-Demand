@@ -8,6 +8,7 @@ import {
   TouchableOpacity,
   ActivityIndicator,
   Alert,
+  ScrollView,
 } from "react-native";
 import {
   GestureHandlerRootView,
@@ -60,6 +61,8 @@ const ResultsScreen = ({ navigation }) => {
     outputRange: [1, 0],
     extrapolate: "clamp",
   });
+
+  const ViewType = isSmallScreen ? ScrollView : View;
 
   // Show secondary loading message after 5 seconds
   useEffect(() => {
@@ -394,7 +397,8 @@ const ResultsScreen = ({ navigation }) => {
 
     return (
       <View style={styles.mealContentContainer}>
-        <View style={styles.mealDetailsContainer}>
+        {/* <View style={styles.mealDetailsContainer}> */}
+        <ViewType style={styles.mealDetailsContainer}>
           <Text style={styles.restaurantName}>
             {currentMeal.restaurant || "Unknown Restaurant"}
           </Text>
@@ -438,7 +442,7 @@ const ResultsScreen = ({ navigation }) => {
               </Text>
             )}
           </View>
-        </View>
+        </ViewType>
 
         {/* Nav Help Container is now positioned at the bottom of the card */}
         <View style={styles.navHelpContainer}>

@@ -31,14 +31,30 @@ const ResultsScreen = ({ navigation }) => {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [showSecondLoadingMessage, setShowSecondLoadingMessage] =
     useState(false);
+
+  // Animation values
   const translateX = useRef(new Animated.Value(0)).current;
-  // Removed separate overlay animated values.
-  // Instead, we use translateX interpolation for dynamic overlay intensity:
+  const cardRotate = useRef(new Animated.Value(0)).current; // Added rotation for card
+
+  // Button animation values
+  const skipButtonScale = useRef(new Animated.Value(1)).current;
+  const saveButtonScale = useRef(new Animated.Value(1)).current;
+  const skipGlowOpacity = useRef(new Animated.Value(0)).current;
+  const saveGlowOpacity = useRef(new Animated.Value(0)).current;
+
+  // Interpolate rotation for card swipe
+  const cardRotation = cardRotate.interpolate({
+    inputRange: [-1, 0, 1],
+    outputRange: ["-8deg", "0deg", "8deg"],
+  });
+
+  // Dynamic overlay for swipe direction
   const greenOpacity = translateX.interpolate({
     inputRange: [0, width / 2],
     outputRange: [0, 1],
     extrapolate: "clamp",
   });
+
   const redOpacity = translateX.interpolate({
     inputRange: [-width / 2, 0],
     outputRange: [1, 0],
@@ -125,27 +141,113 @@ const ResultsScreen = ({ navigation }) => {
 
   const getNextIndex = () => (index + 1) % (mealOptions.length || 1);
 
+  // Animation sequence for the Skip button (red glow)
+  const animateSkipButton = () => {
+    // First grow and add glow
+    Animated.parallel([
+      Animated.sequence([
+        Animated.timing(skipButtonScale, {
+          toValue: 1.3,
+          duration: 200,
+          useNativeDriver: true,
+        }),
+        Animated.timing(skipButtonScale, {
+          toValue: 1,
+          duration: 200,
+          useNativeDriver: true,
+        }),
+      ]),
+      Animated.sequence([
+        Animated.timing(skipGlowOpacity, {
+          toValue: 0.8,
+          duration: 200,
+          useNativeDriver: true,
+        }),
+        Animated.timing(skipGlowOpacity, {
+          toValue: 0,
+          duration: 600,
+          useNativeDriver: true,
+        }),
+      ]),
+    ]).start();
+  };
+
+  // Animation sequence for the Save button (green glow)
+  const animateSaveButton = () => {
+    // First grow and add glow
+    Animated.parallel([
+      Animated.sequence([
+        Animated.timing(saveButtonScale, {
+          toValue: 1.3,
+          duration: 200,
+          useNativeDriver: true,
+        }),
+        Animated.timing(saveButtonScale, {
+          toValue: 1,
+          duration: 200,
+          useNativeDriver: true,
+        }),
+      ]),
+      Animated.sequence([
+        Animated.timing(saveGlowOpacity, {
+          toValue: 0.8,
+          duration: 200,
+          useNativeDriver: true,
+        }),
+        Animated.timing(saveGlowOpacity, {
+          toValue: 0,
+          duration: 600,
+          useNativeDriver: true,
+        }),
+      ]),
+    ]).start();
+  };
+
   const swipeRightAction = () => {
-    Animated.timing(translateX, {
-      toValue: width,
-      duration: 300,
-      useNativeDriver: true,
-    }).start(async () => {
+    // Animate button before swipe animation
+    animateSaveButton();
+
+    // Enhanced card animation with rotation
+    Animated.parallel([
+      Animated.timing(translateX, {
+        toValue: width,
+        duration: 300,
+        useNativeDriver: true,
+      }),
+      Animated.timing(cardRotate, {
+        toValue: 1, // Rotate clockwise
+        duration: 300,
+        useNativeDriver: true,
+      }),
+    ]).start(async () => {
       await saveMeal();
       setIndex(getNextIndex());
       translateX.setValue(0);
+      cardRotate.setValue(0);
     });
   };
 
   // Swipe action for swiping left: simply skip to the next meal
   const swipeLeftAction = () => {
-    Animated.timing(translateX, {
-      toValue: -width,
-      duration: 300,
-      useNativeDriver: true,
-    }).start(() => {
+    // Animate button before swipe animation
+    animateSkipButton();
+
+    // Enhanced card animation with rotation
+    Animated.parallel([
+      Animated.timing(translateX, {
+        toValue: -width,
+        duration: 300,
+        useNativeDriver: true,
+      }),
+      Animated.timing(cardRotate, {
+        toValue: -1, // Rotate counter-clockwise
+        duration: 300,
+        useNativeDriver: true,
+      }),
+    ]).start(() => {
       setIndex(getNextIndex());
       translateX.setValue(0);
+      cardRotate.setValue(0);
     });
   };
 
@@ -159,13 +261,26 @@ const ResultsScreen = ({ navigation }) => {
       } else if (translationX < -50) {
         swipeLeftAction();
       } else {
+        // Return to center with spring animation for a bouncy feel
         Animated.spring(translateX, {
           toValue: 0,
+          friction: 5,
+          tension: 40,
+          useNativeDriver: true,
+        }).start();
+
+        // Reset rotation
+        Animated.spring(cardRotate, {
+          toValue: 0,
+          friction: 5,
+          tension: 40,
           useNativeDriver: true,
         }).start();
       }
     } else if (state === State.ACTIVE) {
       translateX.setValue(translationX);
+      // Calculate rotation based on translation (slight rotation as you drag)
+      cardRotate.setValue(translationX / width);
     }
   };
 
@@ -383,22 +498,67 @@ const ResultsScreen = ({ navigation }) => {
           onHandlerStateChange={handleSwipe}
           enabled={!isLoading && !error && mealOptions.length > 0}
         >
-          <Animated.View style={[styles.box, { transform: [{ translateX }] }]}>
+          <Animated.View
+            style={[
+              styles.box,
+              {
+                transform: [{ translateX }, { rotate: cardRotation }],
+              },
+            ]}
+          >
             {renderMealInfo()}
           </Animated.View>
         </PanGestureHandler>
       </GestureHandlerRootView>
 
-      {/* Swipe action icons */}
+      {/* Swipe action icons with animated glows */}
       <View style={styles.swipeIconContainer}>
-        <TouchableOpacity onPress={swipeLeftAction} style={styles.iconButton}>
-          <Ionicons name="close-circle-outline" size={50} color="white" />
-          <Text style={styles.iconButtonLabel}>Skip</Text>
-        </TouchableOpacity>
-        <TouchableOpacity onPress={swipeRightAction} style={styles.iconButton}>
-          <Ionicons name="checkmark-circle-outline" size={50} color="white" />
-          <Text style={styles.iconButtonLabel}>Save</Text>
-        </TouchableOpacity>
+        {/* Skip button with red glow effect */}
+        <View style={styles.iconButtonWrapper}>
+          <Animated.View
+            style={[
+              styles.glowEffect,
+              styles.redGlow,
+              {
+                opacity: skipGlowOpacity,
+                transform: [{ scale: skipButtonScale }],
+              },
+            ]}
+          />
+          <TouchableOpacity onPress={swipeLeftAction} style={styles.iconButton}>
+            <Animated.View style={{ transform: [{ scale: skipButtonScale }] }}>
+              <Ionicons name="close-circle-outline" size={50} color="white" />
+              <Text style={styles.iconButtonLabel}>Skip</Text>
+            </Animated.View>
+          </TouchableOpacity>
+        </View>
+
+        {/* Save button with green glow effect */}
+        <View style={styles.iconButtonWrapper}>
+          <Animated.View
+            style={[
+              styles.glowEffect,
+              styles.greenGlow,
+              {
+                opacity: saveGlowOpacity,
+                transform: [{ scale: saveButtonScale }],
+              },
+            ]}
+          />
+          <TouchableOpacity
+            onPress={swipeRightAction}
+            style={styles.iconButton}
+          >
+            <Animated.View style={{ transform: [{ scale: saveButtonScale }] }}>
+              <Ionicons
+                name="checkmark-circle-outline"
+                size={50}
+                color="white"
+              />
+              <Text style={styles.iconButtonLabel}>Save</Text>
+            </Animated.View>
+          </TouchableOpacity>
+        </View>
       </View>
 
       <TouchableOpacity
@@ -586,6 +746,35 @@ const styles = StyleSheet.create({
     justifyContent: isSmallScreen ? "center" : "space-around",
     alignItems: isSmallScreen ? "center" : undefined,
     marginBottom: isSmallScreen ? 2 : undefined,
+  },
+  iconButtonWrapper: {
+    position: "relative",
+    marginHorizontal: 20,
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  glowEffect: {
+    position: "absolute",
+    width: 80,
+    height: 80,
+    borderRadius: 40,
+    zIndex: -1,
+  },
+  redGlow: {
+    backgroundColor: "rgba(255, 0, 0, 0.5)",
+    shadowColor: "#FF0000",
+    shadowOffset: { width: 0, height: 0 },
+    shadowOpacity: 1,
+    shadowRadius: 15,
+    elevation: 10,
+  },
+  greenGlow: {
+    backgroundColor: "rgba(0, 255, 0, 0.5)",
+    shadowColor: "#00FF00",
+    shadowOffset: { width: 0, height: 0 },
+    shadowOpacity: 1,
+    shadowRadius: 15,
+    elevation: 10,
   },
   iconButton: {
     padding: 10,

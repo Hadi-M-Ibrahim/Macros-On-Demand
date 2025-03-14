@@ -344,7 +344,7 @@ const InputScreen = () => {
 };
 
 const { width, height } = Dimensions.get("window");
-const isSmallScreen = height < 700;
+const isSmallScreen = height < 750;
 
 const styles = StyleSheet.create({
   background: {

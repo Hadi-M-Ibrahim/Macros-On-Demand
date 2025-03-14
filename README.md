@@ -1,98 +1,85 @@
-# Macros-On-Demand-MoD-
+# Macros-On-Demand (MoD)
 
-A React Native-based app that finds the nutritionally closest fast-food item to an ideal food item
+A **React Native** app that finds the **nutritionally closest fast-food item** to an ideal food item.
 
-# Run Instructions
+## Run Instructions
 
-# Easiest Option
+### Backend
 
-access the project from: (insert URL in a bit)
+The backend is already deployed on a **GCP VM**, so you **don’t need to run it locally**. Just set up the frontend and enjoy! 🎉
 
-# Backend Option 1
+#### Alternatively, if you prefer to run the backend locally:
 
-Don't touch anything, as we have a GCP VM running the backend! Just set up the front end and enjoy :)
+**Requirements:**  
+- **Python 3.12.8**  
+- **Update `api.js` and other IP addresses to your local IP address** before running.
 
-# Backend Option 2
+#### Steps to Run Locally
 
-Backend requires Python 3.12.8.
-
-## Step 0: Update api.js and other ip addresses to local ip address.
-
-## Step 1: Clone the Repository
-
-```
+##### Step 1: Clone the Repository
+```sh
 git clone https://github.com/Hadi-M-Ibrahim/Macros-On-Demand.git
 ```
 
-## Step 2: cd into the Backend Directory
-
-Run the following command to cd into the correct directory:
-
-```
+##### Step 2: Navigate to the Backend Directory
+```sh
 cd Backend
 ```
 
-## Step 3: Create and Activate a Virtual Environment
+##### Step 3: Create and Activate a Virtual Environment  
+Ensure **Python 3.12.8** is installed, then set up a virtual environment:
 
-Ensure you have Python 3.12.8 installed. Then create and activate a new virtual environment:
-
-For Windows:
-
-```
+For **Windows**:
+```sh
 python -m venv venv
-```
-
-```
 venv\Scripts\activate
 ```
 
-For macOS/Linux:
-
-```
+For **macOS/Linux**:
+```sh
 python -m venv venv
-```
-
-```
 source venv/bin/activate
 ```
 
-## Step 4: Install Dependencies:
-
-Install the required packages by running:
-
-```
+##### Step 4: Install Dependencies
+```sh
 pip install -r requirements.txt
 ```
 
-## Step 5: Apply Database Migrations:
-
-Run the following command:
-
-```
+##### Step 5: Apply Database Migrations
+```sh
 python manage.py migrate
 ```
 
-## Step 6: Run the Development Server:
-
-Start the server by running the following command:
-
-```
+##### Step 6: Start the Backend Server
+```sh
 python manage.py runserver
 ```
+The server will now be running at:  
+🔗 **http://127.0.0.1:8000/**  
 
-will now be available at:
-http://127.0.0.1:8000/
+🚨 **UCLA WiFi Notice:** If the backend does not work on **UCLA WiFi**, try using a **hotspot** or another network.
 
-If the backend does not run properly on **UCLA WiFi**, you may need to switch to a **hotspot** or another **network**.
+---
 
-# Frontend
+### Frontend
 
-## Step 1: Install required packages
+##### Step 1: Install Dependencies
+Ensure **Node.js** is installed. Then, navigate to the frontend directory:
 
-Ensure that Node.js is installed. Then, move to the Frontend directory with `cd Frontend`.
+```sh
+cd Frontend
+npm install
+```
 
-Run `npm install` to install required packages.
+##### Step 2: Start the Frontend Server
+```sh
+npm start
+```
+Access the app at **http://localhost:8081**.
 
-## Step 2: Start the app
+---
 
-After cd'ing into the Frontend directory, run `npm start`. Access the app at http://localhost:8081
+### Notes
+- If you're running both **frontend and backend locally**, make sure the **IP addresses in `api.js` are correctly configured**.
+- The **GCP VM backend** is always available, so running it locally is **optional**.

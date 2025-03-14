@@ -256,7 +256,7 @@ const styles = StyleSheet.create({
     textAlign: "center",
     color: "white",
     fontFamily: "Poppins_400Regular",
-    fontSize: width * 0.07,
+    fontSize: width * 0.05,
     marginTop: 70,
     marginBottom: 20,
   },

@@ -300,7 +300,7 @@ const LoginScreen = ({ navigation, route }) => {
               style={{
                 color: "#0000FF",
                 textAlign: "center",
-                fontSize: isSmallScreen ? 14 : 16,
+                fontSize: isSmallScreen ? 12 : 14,
                 fontFamily: "Poppins_400Regular",
               }}
             >

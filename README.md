@@ -1,5 +1,7 @@
-**NOTE: IF LOOKING FOR FILES TO GRADE GO INTO THE GRADING BRANCH https://github.com/Hadi-M-Ibrahim/Macros-On-Demand/tree/gradeing please!!**
-this branch is functional
+**NOTE: Please grade using the dedicated grading branch:** 
+https://github.com/Hadi-M-Ibrahim/Macros-On-Demand/tree/gradeing
+
+(This branch is fully functional.)
 
 # Macros-On-Demand (MoD)
 

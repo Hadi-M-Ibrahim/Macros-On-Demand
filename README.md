@@ -4,11 +4,22 @@ A React Native-based app that finds the nutritionally closest fast-food item to 
 
 # Run Instructions
 
-# Backend
+# Easiest Option
+
+access the project from: (insert URL in a bit)
+
+# Backend Option 1
+
+Don't touch anything, as we have a GCP VM running the backend! Just set up the front end and enjoy :)
+
+# Backend Option 2
 
 Backend requires Python 3.12.8.
 
+## Step 0: Update api.js and other ip addresses to local ip address.
+
 ## Step 1: Clone the Repository
+
 ```
 git clone https://github.com/Hadi-M-Ibrahim/Macros-On-Demand.git
 ```
@@ -16,6 +27,7 @@ git clone https://github.com/Hadi-M-Ibrahim/Macros-On-Demand.git
 ## Step 2: cd into the Backend Directory
 
 Run the following command to cd into the correct directory:
+
 ```
 cd Backend
 ```
@@ -25,17 +37,21 @@ cd Backend
 Ensure you have Python 3.12.8 installed. Then create and activate a new virtual environment:
 
 For Windows:
+
 ```
 python -m venv venv
 ```
+
 ```
 venv\Scripts\activate
 ```
 
 For macOS/Linux:
+
 ```
 python -m venv venv
 ```
+
 ```
 source venv/bin/activate
 ```
@@ -43,6 +59,7 @@ source venv/bin/activate
 ## Step 4: Install Dependencies:
 
 Install the required packages by running:
+
 ```
 pip install -r requirements.txt
 ```
@@ -50,6 +67,7 @@ pip install -r requirements.txt
 ## Step 5: Apply Database Migrations:
 
 Run the following command:
+
 ```
 python manage.py migrate
 ```
@@ -57,6 +75,7 @@ python manage.py migrate
 ## Step 6: Run the Development Server:
 
 Start the server by running the following command:
+
 ```
 python manage.py runserver
 ```
@@ -76,4 +95,4 @@ Run `npm install` to install required packages.
 
 ## Step 2: Start the app
 
-In the Frontend directory, run `npm start`. Access the app at http://localhost:8081
+After cd'ing into the Frontend directory, run `npm start`. Access the app at http://localhost:8081

@@ -302,25 +302,8 @@ const styles = StyleSheet.create({
     color: "white",
     fontFamily: "Poppins_400Regular",
     fontSize: width * 0.07,
-  },
-  toast: {
-    position: "absolute",
-    zIndex: 10,
-    top: 120,
-    alignSelf: "center",
-    backgroundColor: "rgba(74, 32, 64, 0.9)",
-    paddingVertical: 10,
-    paddingHorizontal: 15,
-    borderRadius: 25,
-  },
-  toastText: {
-    color: "white",
-    fontFamily: "Poppins_400Regular",
-    fontSize: 14,
-  },
-  searchContainer: {
-    alignItems: "center",
-    marginBottom: 15,
+    marginTop: 70,
+    marginBottom: 20,
   },
   searchLabel: {
     fontFamily: "Poppins_400Regular",

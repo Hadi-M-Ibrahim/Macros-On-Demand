@@ -425,6 +425,7 @@ const SignUpScreen = ({ navigation }) => {
                 color: "black",
                 textAlign: "center",
                 fontSize: isSmallScreen ? 12 : 14,
+                fontFamily: "Poppins_400Regular",
               }}
             >
               Already have an account?
@@ -433,7 +434,8 @@ const SignUpScreen = ({ navigation }) => {
               style={{
                 color: "#0000FF",
                 textAlign: "center",
-                fontSize: isSmallScreen ? 14 : 16,
+                fontSize: isSmallScreen ? 12 : 14,
+                fontFamily: "Poppins_400Regular",
               }}
             >
               Log In

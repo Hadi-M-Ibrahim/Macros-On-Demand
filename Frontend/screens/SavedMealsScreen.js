@@ -9,6 +9,7 @@ import {
   Alert,
   Dimensions,
   TextInput,
+  Animated,
 } from "react-native";
 import { LinearGradient } from "@tamagui/linear-gradient";
 import { Card } from "tamagui";
@@ -23,8 +24,10 @@ const SavedMeals = ({ navigation }) => {
   const [error, setError] = useState(null);
   const [searchQuery, setSearchQuery] = useState("");
   const [searchMode, setSearchMode] = useState("restaurant");
+  const [deleteMessage, setDeleteMessage] = useState("");
+  const [showDeleteToast, setShowDeleteToast] = useState(false);
+  const toastOpacity = React.useRef(new Animated.Value(0)).current;
 
-  
   const filteredMeals = meals.filter((item) => {
     if (searchMode === "restaurant") {
       return item.meal.restaurant
@@ -62,16 +65,41 @@ const SavedMeals = ({ navigation }) => {
     fetchSavedMeals();
   }, [navigation]);
 
+  // Handle toast animation
+  useEffect(() => {
+    if (deleteMessage) {
+      setShowDeleteToast(true);
+
+      // Animate toast notification
+      Animated.sequence([
+        Animated.timing(toastOpacity, {
+          toValue: 1,
+          duration: 500,
+          useNativeDriver: true,
+        }),
+        Animated.delay(2500),
+        Animated.timing(toastOpacity, {
+          toValue: 0,
+          duration: 500,
+          useNativeDriver: true,
+        }),
+      ]).start(() => {
+        setShowDeleteToast(false);
+        setDeleteMessage("");
+      });
+    }
+  }, [deleteMessage]);
+
   const deleteMeal = async (mealId) => {
     try {
       await api.meals.deleteMeal(mealId);
       setMeals((prevMeals) =>
         prevMeals.filter((item) => item.meal.id !== mealId)
       );
-      Alert.alert("Success", "Meal deleted successfully.");
+      setDeleteMessage("Meal deleted successfully");
     } catch (error) {
       console.error("Delete meal error:", error);
-      Alert.alert("Error", error.message || "Failed to delete meal.");
+      setDeleteMessage("Failed to delete meal");
     }
   };
 
@@ -139,58 +167,70 @@ const SavedMeals = ({ navigation }) => {
         <Ionicons name="arrow-back" size={30} color="white" />
       </TouchableOpacity>
 
-      <Text style={styles.header}>Saved Meals</Text>
-      
-      {/* Search by label */}
-      <Text style={styles.searchLabel}>Search by:</Text>
+      <View style={styles.headerContainer}>
+        <Text style={styles.header}>Saved Meals</Text>
 
-      {/* Search Mode Toggle */}
-      <View style={styles.searchToggleContainer}>
-        <TouchableOpacity
-          style={[
-            styles.searchToggleButton,
-            searchMode === "restaurant" && styles.activeToggle,
-          ]}
-          onPress={() => setSearchMode("restaurant")}
-        >
-          <Text
-            style={[
-              styles.searchToggleText,
-              searchMode === "restaurant" && styles.activeToggleText,
-            ]}
-          >
-            Restaurant
-          </Text>
-        </TouchableOpacity>
-        <TouchableOpacity
-          style={[
-            styles.searchToggleButton,
-            searchMode === "food" && styles.activeToggle,
-          ]}
-          onPress={() => setSearchMode("food")}
-        >
-          <Text
-            style={[
-              styles.searchToggleText,
-              searchMode === "food" && styles.activeToggleText,
-            ]}
-          >
-            Food Items
-          </Text>
-        </TouchableOpacity>
+        {/* Toast notification for delete message */}
+        {showDeleteToast && (
+          <Animated.View style={[styles.toast, { opacity: toastOpacity }]}>
+            <Text style={styles.toastText}>{deleteMessage}</Text>
+          </Animated.View>
+        )}
       </View>
 
-      <TextInput
-        style={styles.searchBar}
-        placeholder={
-          searchMode === "restaurant"
-            ? "Search by restaurant"
-            : "Search by food items"
-        }
-        placeholderTextColor="#888"
-        value={searchQuery}
-        onChangeText={setSearchQuery}
-      />
+      {/* Search Container */}
+      <View style={styles.searchContainer}>
+        {/* Search by label */}
+        <Text style={styles.searchLabel}>Search by:</Text>
+
+        {/* Search Mode Toggle */}
+        <View style={styles.searchToggleContainer}>
+          <TouchableOpacity
+            style={[
+              styles.searchToggleButton,
+              searchMode === "restaurant" && styles.activeToggle,
+            ]}
+            onPress={() => setSearchMode("restaurant")}
+          >
+            <Text
+              style={[
+                styles.searchToggleText,
+                searchMode === "restaurant" && styles.activeToggleText,
+              ]}
+            >
+              Restaurant
+            </Text>
+          </TouchableOpacity>
+          <TouchableOpacity
+            style={[
+              styles.searchToggleButton,
+              searchMode === "food" && styles.activeToggle,
+            ]}
+            onPress={() => setSearchMode("food")}
+          >
+            <Text
+              style={[
+                styles.searchToggleText,
+                searchMode === "food" && styles.activeToggleText,
+              ]}
+            >
+              Food Items
+            </Text>
+          </TouchableOpacity>
+        </View>
+
+        <TextInput
+          style={styles.searchBar}
+          placeholder={
+            searchMode === "restaurant"
+              ? "Search by restaurant"
+              : "Search by food items"
+          }
+          placeholderTextColor="#888"
+          value={searchQuery}
+          onChangeText={setSearchQuery}
+        />
+      </View>
 
       {isLoading ? (
         <View style={styles.centerContainer}>
@@ -246,6 +286,11 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
   },
+  headerContainer: {
+    alignItems: "center",
+    marginTop: 70,
+    marginBottom: 10,
+  },
   centerContainer: {
     flex: 1,
     justifyContent: "center",
@@ -257,21 +302,35 @@ const styles = StyleSheet.create({
     color: "white",
     fontFamily: "Poppins_400Regular",
     fontSize: width * 0.07,
-    marginTop: 70,
-    marginBottom: 20,
+  },
+  toast: {
+    position: "absolute",
+    zIndex: 10,
+    top: 120,
+    alignSelf: "center",
+    backgroundColor: "rgba(74, 32, 64, 0.9)",
+    paddingVertical: 10,
+    paddingHorizontal: 15,
+    borderRadius: 25,
+  },
+  toastText: {
+    color: "white",
+    fontFamily: "Poppins_400Regular",
+    fontSize: 14,
+  },
+  searchContainer: {
+    alignItems: "center",
+    marginBottom: 15,
   },
   searchLabel: {
-    textAlign: "center",
     fontFamily: "Poppins_400Regular",
     fontSize: 16,
     color: "#fff",
-    marginHorizontal: 15,
     marginBottom: 5,
   },
   searchToggleContainer: {
     flexDirection: "row",
     justifyContent: "center",
-    marginHorizontal: 15,
     marginBottom: 10,
   },
   searchToggleButton: {
@@ -295,11 +354,10 @@ const styles = StyleSheet.create({
   },
   searchBar: {
     height: 40,
+    width: width * 0.5, // Makes the search bar smaller and responsive
     borderColor: "#ccc",
     borderWidth: 1,
     borderRadius: 8,
-    marginHorizontal: 15,
-    marginBottom: 15,
     paddingHorizontal: 10,
     backgroundColor: "white",
     color: "#4A2040",

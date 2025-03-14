@@ -8,7 +8,6 @@ import {
   TouchableOpacity,
   ActivityIndicator,
   Alert,
-  ScrollView,
 } from "react-native";
 import {
   GestureHandlerRootView,
@@ -33,9 +32,18 @@ const ResultsScreen = ({ navigation }) => {
   const [showSecondLoadingMessage, setShowSecondLoadingMessage] =
     useState(false);
   const translateX = useRef(new Animated.Value(0)).current;
-
-  const ViewType = isSmallScreen ? ScrollView : View;
-
+  // Removed separate overlay animated values.
+  // Instead, we use translateX interpolation for dynamic overlay intensity:
+  const greenOpacity = translateX.interpolate({
+    inputRange: [0, width / 2],
+    outputRange: [0, 1],
+    extrapolate: "clamp",
+  });
+  const redOpacity = translateX.interpolate({
+    inputRange: [-width / 2, 0],
+    outputRange: [1, 0],
+    extrapolate: "clamp",
+  });
 
   // Show secondary loading message after 5 seconds
   useEffect(() => {
@@ -271,9 +279,7 @@ const ResultsScreen = ({ navigation }) => {
 
     return (
       <View style={styles.mealContentContainer}>
-
-        <ViewType style={styles.mealDetailsContainer} contentContainerStyle={styles.mealDetailsContent}>
-        {/* <ScrollView style={styles.mealDetailsContainer} contentContainerStyle={styles.mealDetailsContent}> */}
+        <View style={styles.mealDetailsContainer}>
           <Text style={styles.restaurantName}>
             {currentMeal.restaurant || "Unknown Restaurant"}
           </Text>
@@ -317,7 +323,7 @@ const ResultsScreen = ({ navigation }) => {
               </Text>
             )}
           </View>
-        </ViewType>
+        </View>
 
         {/* Nav Help Container is now positioned at the bottom of the card */}
         <View style={styles.navHelpContainer}>
@@ -340,6 +346,27 @@ const ResultsScreen = ({ navigation }) => {
         end={[1, 1]}
         style={StyleSheet.absoluteFill}
       />
+      {/* Green overlay for save (right) */}
+      <Animated.View
+        style={[styles.overlay, { opacity: greenOpacity, right: 0 }]}
+      >
+        <LinearGradient
+          colors={["rgba(0,255,0,0.5)", "transparent"]}
+          start={{ x: 1, y: 0 }}
+          end={{ x: 0, y: 0 }}
+          style={styles.gradient}
+        />
+      </Animated.View>
+      {/* Red overlay for skip (left) */}
+      <Animated.View style={[styles.overlay, { opacity: redOpacity, left: 0 }]}>
+        <LinearGradient
+          colors={["rgba(255,0,0,0.5)", "transparent"]}
+          start={{ x: 0, y: 0 }}
+          end={{ x: 1, y: 0 }}
+          style={styles.gradient}
+        />
+      </Animated.View>
+
       <TouchableOpacity
         style={styles.backButton}
         onPress={() => navigation.goBack()}
@@ -383,7 +410,6 @@ const ResultsScreen = ({ navigation }) => {
     </View>
   );
 };
-
 
 const styles = StyleSheet.create({
   container: {
@@ -558,9 +584,8 @@ const styles = StyleSheet.create({
     right: isSmallScreen ? undefined : 0,
     flexDirection: "row",
     justifyContent: isSmallScreen ? "center" : "space-around",
-
     alignItems: isSmallScreen ? "center" : undefined,
-    marginBottom: isSmallScreen ? 2 : undefined,  
+    marginBottom: isSmallScreen ? 2 : undefined,
   },
   iconButton: {
     padding: 10,
@@ -571,6 +596,18 @@ const styles = StyleSheet.create({
     color: "white",
     fontSize: 12,
     marginTop: 4,
+  },
+  // Styles for overlay gradients
+  overlay: {
+    position: "absolute",
+    top: 0,
+    bottom: 0,
+    width: width / 1.75,
+    pointerEvents: "none",
+    zIndex: 1,
+  },
+  gradient: {
+    flex: 1,
   },
 });
 

@@ -7,6 +7,7 @@ import {
   ActivityIndicator,
   Dimensions,
   Animated,
+  Text as RNText,
 } from "react-native";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { Button, Input, Stack, Text, YStack, Card } from "tamagui";
@@ -20,12 +21,16 @@ const SignUpScreen = ({ navigation }) => {
   const [confirmPassword, setConfirmPassword] = useState("");
   const [error, setError] = useState("");
   const [isLoading, setIsLoading] = useState(false);
+  const [isCheckingEmail, setIsCheckingEmail] = useState(false);
 
   // Password validation
   const [isPasswordLongEnough, setIsPasswordLongEnough] = useState(false);
   const [passwordsMatch, setPasswordsMatch] = useState(false);
   const fadeAnim = useRef(new Animated.Value(0)).current;
   const fadeMatchAnim = useRef(new Animated.Value(0)).current;
+  const [showEmailToast, setShowEmailToast] = useState(false);
+  const toastOpacity = useRef(new Animated.Value(0)).current;
+  const toastMessage = useRef("Email checking in progress...");
 
   const [fontsLoaded] = useFonts({
     Poppins_400Regular,
@@ -74,26 +79,79 @@ const SignUpScreen = ({ navigation }) => {
     }
   }, [password, confirmPassword]);
 
-  // loading indicator until fonts load
+  // Loading indicator until fonts load
   if (!fontsLoaded) {
     return <ActivityIndicator size="large" color="#0000ff" />;
   }
 
-  // validate email with regex
+  // Validate email with regex
   const validateEmail = (email) => {
     const regex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     return regex.test(email);
   };
 
-  // check if email exists
-  const checkEmailExists = async (email) => {
+  // Check if email exists
+  const checkEmailExists = async (emailToCheck) => {
+    if (!validateEmail(emailToCheck)) {
+      return false; // Don't attempt to check invalid emails
+    }
+
     try {
-      const result = await api.auth.checkEmailExists(email);
+      setIsCheckingEmail(true);
+      showToast("Checking email...");
+
+      const result = await api.auth.checkEmailExists(emailToCheck);
+
+      if (result.exists) {
+        showToast("Email already exists, redirecting to login...");
+
+        // Short delay before navigation to let the user see the toast
+        setTimeout(() => {
+          navigation.navigate("Login", { email: emailToCheck });
+        }, 1500);
+      } else {
+        hideToast();
+      }
+
+      setIsCheckingEmail(false);
       return result.exists;
     } catch (error) {
       console.error("Error checking email:", error);
+      setIsCheckingEmail(false);
+      hideToast();
       return false; // Assume email doesn't exist if check fails
     }
+  };
+
+  // Handle email blur (when user clicks outside the email input)
+  const handleEmailBlur = () => {
+    if (email) {
+      checkEmailExists(email);
+    }
+  };
+
+  // Function to show toast message
+  const showToast = (message) => {
+    toastMessage.current = message;
+    setShowEmailToast(true);
+    Animated.sequence([
+      Animated.timing(toastOpacity, {
+        toValue: 1,
+        duration: 300,
+        useNativeDriver: true,
+      }),
+    ]).start();
+  };
+
+  // Function to hide toast message
+  const hideToast = () => {
+    Animated.timing(toastOpacity, {
+      toValue: 0,
+      duration: 300,
+      useNativeDriver: true,
+    }).start(() => {
+      setShowEmailToast(false);
+    });
   };
 
   const onSignUp = async () => {
@@ -119,18 +177,12 @@ const SignUpScreen = ({ navigation }) => {
 
     setIsLoading(true);
 
-    // check if email exists
+    // Check if email exists
     try {
       const emailExists = await checkEmailExists(email);
       if (emailExists) {
-        setError("Email already exists. Redirecting to login...");
         setIsLoading(false);
-
-        // Wait briefly then redirect to login
-        setTimeout(() => {
-          navigation.navigate("Login", { email: email });
-        }, 1500);
-        return;
+        return; // checkEmailExists already handles the redirect
       }
     } catch (error) {
       console.error("Error checking email:", error);
@@ -182,6 +234,14 @@ const SignUpScreen = ({ navigation }) => {
         end={[1, 1]}
         style={styles.background}
       />
+
+      {/* Toast notification */}
+      {showEmailToast && (
+        <Animated.View style={[styles.toast, { opacity: toastOpacity }]}>
+          <RNText style={styles.toastText}>{toastMessage.current}</RNText>
+        </Animated.View>
+      )}
+
       <Card
         elevate
         size="$4"
@@ -237,10 +297,12 @@ const SignUpScreen = ({ navigation }) => {
               placeholder="Enter your email"
               value={email}
               onChangeText={setEmail}
+              onBlur={handleEmailBlur}
               padding={isSmallScreen ? "$1" : "$2"}
               style={{ ...(isSmallScreen && { marginBottom: 20 }) }}
               autoCapitalize="none"
               keyboardType="email-address"
+              disabled={isCheckingEmail}
             />
           </Stack>
 
@@ -331,12 +393,14 @@ const SignUpScreen = ({ navigation }) => {
               styles.button,
               isSmallScreen && { paddingVertical: 8, paddingHorizontal: 12 },
               ((password.length > 0 && !isPasswordLongEnough) ||
-                (confirmPassword.length > 0 && !passwordsMatch)) &&
+                (confirmPassword.length > 0 && !passwordsMatch) ||
+                isCheckingEmail) &&
                 styles.disabledButton,
             ]}
             onPress={onSignUp}
             disabled={
               isLoading ||
+              isCheckingEmail ||
               (password.length > 0 && !isPasswordLongEnough) ||
               (confirmPassword.length > 0 && !passwordsMatch)
             }
@@ -391,6 +455,20 @@ const styles = StyleSheet.create({
     position: "absolute",
     width: "100%",
     height: "100%",
+  },
+  toast: {
+    position: "absolute",
+    top: 70,
+    backgroundColor: "rgba(74, 32, 64, 0.9)",
+    paddingVertical: 10,
+    paddingHorizontal: 15,
+    borderRadius: 25,
+    zIndex: 10,
+  },
+  toastText: {
+    color: "white",
+    fontFamily: "Poppins_400Regular",
+    fontSize: 14,
   },
   button: {
     backgroundColor: "#9F6BA0",

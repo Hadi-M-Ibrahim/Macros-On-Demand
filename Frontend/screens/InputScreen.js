@@ -39,7 +39,6 @@ const InputScreen = () => {
     Poppins_400Regular,
   });
 
-  
   // Check if user is logged in
   useEffect(() => {
     const checkLoginStatus = async () => {
@@ -212,8 +211,6 @@ const InputScreen = () => {
     return <ActivityIndicator size="large" color="#0000ff" />;
   }
 
-  
-
   return (
     <ScrollView contentContainerStyle={{ flexGrow: 1 }}>
       <View style={styles.container}>
@@ -224,6 +221,7 @@ const InputScreen = () => {
           style={styles.background}
         />
 
+        {/* Back button */}
         <TouchableOpacity
           style={styles.backButton}
           onPress={() => navigation.goBack()}
@@ -231,100 +229,114 @@ const InputScreen = () => {
           <Ionicons name="arrow-back" size={30} color="white" />
         </TouchableOpacity>
 
-        <View style={isSmallScreen ? styles.cardWrapper : styles.container}>
-        <Card
-          elevate
-          size="$4"
-          bordered
-          padding="$6"
-          width={"80%"}
-          height={isSmallScreen ? height * 0.8 : "auto"}
-          backgroundColor="white"
-          borderWidth={0}
-          shadowColor="rgba(0, 0, 0, 0.1)"
-          shadowOffset={{ width: 5, height: 10 }}
-          shadowOpacity={0.3}
-          shadowRadius={10}
+        {/* Profile button - Added to match results screen */}
+        <TouchableOpacity
+          style={styles.iconContainer}
+          onPress={() => navigation.navigate("UserProfile")}
         >
-          <YStack
-            space="$4"
-            padding="$4"
-            borderRadius="$4"
-            backgroundColor="$color2"
-            alignItems="center"
+          <Ionicons name="person-circle-outline" size={50} color="white" />
+        </TouchableOpacity>
+
+        <View style={isSmallScreen ? styles.cardWrapper : styles.container}>
+          <Card
+            elevate
+            size="$4"
+            bordered
+            padding="$6"
+            width={"80%"}
+            height={isSmallScreen ? height * 0.8 : "auto"}
+            backgroundColor="white"
+            borderWidth={0}
+            shadowColor="rgba(0, 0, 0, 0.1)"
+            shadowOffset={{ width: 5, height: 10 }}
+            shadowOpacity={0.3}
+            shadowRadius={10}
           >
-            <Text style={styles.title}>Input Ideal Macros</Text>
-
-            <View style={styles.inputContainer}>
-              <Text style={styles.label}>Calories:</Text>
-              <TextInput
-                style={[styles.input, caloriesError ? styles.inputError : null]}
-                value={calories}
-                onChangeText={handleCaloriesChange}
-                keyboardType="numeric"
-                placeholder="Enter target calories"
-              />
-              {caloriesError ? (
-                <Text style={styles.errorText}>{caloriesError}</Text>
-              ) : null}
-            </View>
-
-            <View style={styles.inputContainer}>
-              <Text style={styles.label}>Protein (g):</Text>
-              <TextInput
-                style={[styles.input, proteinError ? styles.inputError : null]}
-                value={protein}
-                onChangeText={handleProteinChange}
-                keyboardType="numeric"
-                placeholder="Enter target protein"
-              />
-              {proteinError ? (
-                <Text style={styles.errorText}>{proteinError}</Text>
-              ) : null}
-            </View>
-
-            <View style={styles.inputContainer}>
-              <Text style={styles.label}>Carbs (g):</Text>
-              <TextInput
-                style={[styles.input, carbsError ? styles.inputError : null]}
-                value={carbs}
-                onChangeText={handleCarbsChange}
-                keyboardType="numeric"
-                placeholder="Enter target carbs"
-              />
-              {carbsError ? (
-                <Text style={styles.errorText}>{carbsError}</Text>
-              ) : null}
-            </View>
-
-            <View style={styles.inputContainer}>
-              <Text style={styles.label}>Fat (g):</Text>
-              <TextInput
-                style={[styles.input, fatError ? styles.inputError : null]}
-                value={fat}
-                onChangeText={handleFatChange}
-                keyboardType="numeric"
-                placeholder="Enter target fat"
-              />
-              {fatError ? (
-                <Text style={styles.errorText}>{fatError}</Text>
-              ) : null}
-            </View>
-
-            <TouchableOpacity
-              style={styles.button}
-              onPress={onSubmit}
-              disabled={isLoading}
-              activeOpacity={0.7}
+            <YStack
+              space="$4"
+              padding="$4"
+              borderRadius="$4"
+              backgroundColor="$color2"
+              alignItems="center"
             >
-              {isLoading ? (
-                <ActivityIndicator color="white" />
-              ) : (
-                <Text style={styles.buttonText}>Find Meals</Text>
-              )}
-            </TouchableOpacity>
-          </YStack>
-        </Card>
+              <Text style={styles.title}>Input Ideal Macros</Text>
+
+              <View style={styles.inputContainer}>
+                <Text style={styles.label}>Calories:</Text>
+                <TextInput
+                  style={[
+                    styles.input,
+                    caloriesError ? styles.inputError : null,
+                  ]}
+                  value={calories}
+                  onChangeText={handleCaloriesChange}
+                  keyboardType="numeric"
+                  placeholder="Enter target calories"
+                />
+                {caloriesError ? (
+                  <Text style={styles.errorText}>{caloriesError}</Text>
+                ) : null}
+              </View>
+
+              <View style={styles.inputContainer}>
+                <Text style={styles.label}>Protein (g):</Text>
+                <TextInput
+                  style={[
+                    styles.input,
+                    proteinError ? styles.inputError : null,
+                  ]}
+                  value={protein}
+                  onChangeText={handleProteinChange}
+                  keyboardType="numeric"
+                  placeholder="Enter target protein"
+                />
+                {proteinError ? (
+                  <Text style={styles.errorText}>{proteinError}</Text>
+                ) : null}
+              </View>
+
+              <View style={styles.inputContainer}>
+                <Text style={styles.label}>Carbs (g):</Text>
+                <TextInput
+                  style={[styles.input, carbsError ? styles.inputError : null]}
+                  value={carbs}
+                  onChangeText={handleCarbsChange}
+                  keyboardType="numeric"
+                  placeholder="Enter target carbs"
+                />
+                {carbsError ? (
+                  <Text style={styles.errorText}>{carbsError}</Text>
+                ) : null}
+              </View>
+
+              <View style={styles.inputContainer}>
+                <Text style={styles.label}>Fat (g):</Text>
+                <TextInput
+                  style={[styles.input, fatError ? styles.inputError : null]}
+                  value={fat}
+                  onChangeText={handleFatChange}
+                  keyboardType="numeric"
+                  placeholder="Enter target fat"
+                />
+                {fatError ? (
+                  <Text style={styles.errorText}>{fatError}</Text>
+                ) : null}
+              </View>
+
+              <TouchableOpacity
+                style={styles.button}
+                onPress={onSubmit}
+                disabled={isLoading}
+                activeOpacity={0.7}
+              >
+                {isLoading ? (
+                  <ActivityIndicator color="white" />
+                ) : (
+                  <Text style={styles.buttonText}>Find Meals</Text>
+                )}
+              </TouchableOpacity>
+            </YStack>
+          </Card>
         </View>
       </View>
     </ScrollView>
@@ -333,7 +345,7 @@ const InputScreen = () => {
 
 const { width, height } = Dimensions.get("window");
 const isSmallScreen = height < 700;
-  
+
 const styles = StyleSheet.create({
   background: {
     position: "absolute",
@@ -350,12 +362,19 @@ const styles = StyleSheet.create({
     marginTop: 50,
     alignItems: "center",
     width: "100%",
-    justifyContent:"center",
+    justifyContent: "center",
   },
   backButton: {
     position: "absolute",
     top: 50,
     left: 20,
+    zIndex: 10,
+  },
+  // Added profile icon container to match results screen
+  iconContainer: {
+    position: "absolute",
+    top: 30,
+    right: 20,
     zIndex: 10,
   },
   title: {

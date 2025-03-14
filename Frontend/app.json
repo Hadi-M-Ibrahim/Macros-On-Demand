@@ -1,7 +1,7 @@
 {
   "expo": {
-    "name": "MoD",
-    "slug": "MoD",
+    "name": "macrosondemand",
+    "slug": "macrosondemand",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
@@ -29,6 +29,6 @@
     "web": {
       "favicon": "./assets/favicon.png"
     },
-    "scheme": "MoD"
+    "scheme": "macrosondemand"
   }
 }

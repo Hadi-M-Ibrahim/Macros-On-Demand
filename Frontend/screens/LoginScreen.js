@@ -7,6 +7,7 @@ import {
   Dimensions,
   Animated,
   Text as RNText,
+  Image,
 } from "react-native";
 import { Button, Input, Stack, Text, YStack, Card } from "tamagui";
 import { LinearGradient } from "@tamagui/linear-gradient";
@@ -22,6 +23,7 @@ const LoginScreen = ({ navigation, route }) => {
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
   const [isLoading, setIsLoading] = useState(false);
+  const [isGoogleLoading, setIsGoogleLoading] = useState(false);
   const [showEmailToast, setShowEmailToast] = useState(false);
 
   // animation references
@@ -140,6 +142,27 @@ const LoginScreen = ({ navigation, route }) => {
       setIsLoading(false);
     }
   };
+
+  const handleGoogleLogin = async () => {
+    setError("");
+    setIsGoogleLoading(true);
+  
+    try {
+      console.log("Starting Google login flow");
+      const result = await api.auth.googleAuth();
+      console.log("Google login successful:", result);
+      
+      // Navigate to inputs screen
+      navigation.navigate("Inputs");
+    } catch (error) {
+      console.error("Google login error:", error);
+      setError(error.message || "Google login failed. Please try again.");
+    } finally {
+      setIsGoogleLoading(false);
+    }
+  };
+  
+  
 
   const { width, height } = Dimensions.get("window");
   const isSmallScreen = height < 750;
@@ -278,6 +301,34 @@ const LoginScreen = ({ navigation, route }) => {
             )}
           </TouchableOpacity>
 
+          {/* Separator with "OR" text */}
+          <View style={styles.separatorContainer}>
+            <View style={styles.separatorLine} />
+            <Text style={styles.separatorText}>OR</Text>
+            <View style={styles.separatorLine} />
+          </View>
+
+          {/* Google Sign-In Button */}
+          <TouchableOpacity
+            style={styles.googleButton}
+            activeOpacity={0.7}
+            onPress={handleGoogleLogin}
+            disabled={isGoogleLoading}
+          >
+            {isGoogleLoading ? (
+              <ActivityIndicator color="#4285F4" />
+            ) : (
+              <>
+                <Text
+                  style={styles.googleButtonText}
+                  fontFamily="Poppins_400Regular"
+                >
+                  Sign in with Google
+                </Text>
+              </>
+            )}
+          </TouchableOpacity>
+
           <Button
             style={{
               backgroundColor: "transparent",
@@ -351,6 +402,39 @@ const styles = StyleSheet.create({
     marginBottom: 10,
     // add max width to ensure error message wraps properly
     width: "100%",
+  },
+  separatorContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginTop: 10,
+    marginBottom: 10,
+    width: '100%',
+  },
+  separatorLine: {
+    flex: 1,
+    height: 1,
+    backgroundColor: '#E0E0E0',
+  },
+  separatorText: {
+    paddingHorizontal: 10,
+    color: '#888',
+    fontFamily: "Poppins_400Regular",
+    fontSize: 12,
+  },
+  googleButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: 'white',
+    padding: 12,
+    width: '100%',
+    borderRadius: 16,
+    borderWidth: 1,
+    borderColor: '#DADCE0',
+  },
+  googleButtonText: {
+    color: '#757575',
+    fontSize: 14,
   },
 });
 

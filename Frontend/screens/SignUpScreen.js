@@ -7,6 +7,7 @@ import {
   ActivityIndicator,
   Dimensions,
   Animated,
+  Image,
 } from "react-native";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { Button, Input, Stack, Text, YStack, Card } from "tamagui";
@@ -20,6 +21,7 @@ const SignUpScreen = ({ navigation }) => {
   const [confirmPassword, setConfirmPassword] = useState("");
   const [error, setError] = useState("");
   const [isLoading, setIsLoading] = useState(false);
+  const [isGoogleLoading, setIsGoogleLoading] = useState(false);
 
   // Password validation
   const [isPasswordLongEnough, setIsPasswordLongEnough] = useState(false);
@@ -168,6 +170,30 @@ const SignUpScreen = ({ navigation }) => {
       }
     } finally {
       setIsLoading(false);
+    }
+  };
+  
+  const handleGoogleSignUp = async () => {
+    setError("");
+    setIsGoogleLoading(true);
+  
+    try {
+      console.log("Starting Google signup flow");
+      const result = await api.auth.googleAuth();
+      console.log("Google signup successful:", result);
+      
+      // Check if user was newly created
+      if (result.user && result.user.newly_created) {
+        Alert.alert("Success", "Account created successfully with Google.");
+      }
+      
+      // Navigate to inputs screen
+      navigation.navigate("Inputs");
+    } catch (error) {
+      console.error("Google signup error:", error);
+      setError(error.message || "Google signup failed. Please try again.");
+    } finally {
+      setIsGoogleLoading(false);
     }
   };
 
@@ -347,12 +373,40 @@ const SignUpScreen = ({ navigation }) => {
               <Text style={styles.buttonText}>Sign Up</Text>
             )}
           </TouchableOpacity>
+          
+          {/* Separator with "OR" text */}
+          <View style={styles.separatorContainer}>
+            <View style={styles.separatorLine} />
+            <Text style={styles.separatorText}>OR</Text>
+            <View style={styles.separatorLine} />
+          </View>
+          
+          {/* Google Sign-Up Button */}
+          <TouchableOpacity
+            style={styles.googleButton}
+            activeOpacity={0.7}
+            onPress={handleGoogleSignUp}
+            disabled={isGoogleLoading}
+          >
+            {isGoogleLoading ? (
+              <ActivityIndicator color="#4285F4" />
+            ) : (
+              <>
+                <Text
+                  style={styles.googleButtonText}
+                  fontFamily="Poppins_400Regular"
+                >
+                  Sign up with Google
+                </Text>
+              </>
+            )}
+          </TouchableOpacity>
 
           <Button
             style={{
               backgroundColor: "transparent",
               alignSelf: "center",
-              marginTop: 20, // Add space to accommodate the password match message
+              marginTop: 10, // Adjusted for better spacing with the Google button
             }}
             onPress={() => navigation.navigate("Login")}
           >
@@ -413,6 +467,39 @@ const styles = StyleSheet.create({
     textAlign: "center",
     marginBottom: 10,
     width: "100%", // ensure proper text wrapping
+  },
+  separatorContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginTop: 10,
+    marginBottom: 10,
+    width: '100%',
+  },
+  separatorLine: {
+    flex: 1,
+    height: 1,
+    backgroundColor: '#E0E0E0',
+  },
+  separatorText: {
+    paddingHorizontal: 10,
+    color: '#888',
+    fontFamily: "Poppins_400Regular",
+    fontSize: 12,
+  },
+  googleButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: 'white',
+    padding: 12,
+    width: '100%',
+    borderRadius: 16,
+    borderWidth: 1,
+    borderColor: '#DADCE0',
+  },
+  googleButtonText: {
+    color: '#757575',
+    fontSize: 14,
   },
 });
 

@@ -1,4 +1,6 @@
 import AsyncStorage from "@react-native-async-storage/async-storage";
+import * as WebBrowser from 'expo-web-browser';
+import * as Linking from 'expo-linking';
 
 const API_BASE_URL = "http://34.169.212.24:8000/api";
 
@@ -12,6 +14,12 @@ const apiCache = {
   cacheExpiry: {},
   DEFAULT_CACHE_TIME: 15 * 60 * 1000, //15 min
 };
+
+// Register for the authentication callback
+WebBrowser.maybeCompleteAuthSession();
+
+// Create the redirect URL using Expo's Linking API
+const redirectUri = Linking.createURL('auth/google');
 
 // Helper function to create cache keys from parameters
 const createCacheKey = (params) => {
@@ -188,6 +196,99 @@ const api = {
         throw error;
       }
     },
+
+    // Google OAuth login/signup
+    
+  googleAuth: async () => {
+    try {
+      console.log('Starting Google OAuth flow');
+      
+      // Step 1: Get authorization URL from backend
+      console.log('Fetching auth URL from backend');
+      // Update to use the correct endpoint
+      const response = await fetch(`${API_BASE_URL.replace('/api', '')}/login/google/`, {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      });
+      
+      // Log the raw response text for debugging
+      const responseText = await response.text();
+      console.log('Raw response:', responseText);
+      
+      // Try to parse as JSON if possible
+      let data;
+      try {
+        data = JSON.parse(responseText);
+      } catch (e) {
+        console.error('Failed to parse response as JSON:', e);
+        if (responseText.includes('<!DOCTYPE html>')) {
+          // The response is an HTML page, which might be a direct redirect
+          // Extract the redirect URL if possible
+          const match = responseText.match(/window.location.href\s*=\s*['"]([^'"]+)['"]/);
+          if (match && match[1]) {
+            data = { authorization_url: match[1] };
+          } else {
+            throw new Error('Server returned HTML instead of JSON');
+          }
+        } else {
+          throw new Error('Invalid response from server: not valid JSON');
+        }
+      }
+      
+      const authUrl = data.authorization_url;
+      console.log('Auth URL received:', authUrl);
+      
+      // Step 2: Open browser for Google authentication
+      console.log('Opening browser with auth URL');
+      console.log('Redirect URI:', redirectUri);
+      const result = await WebBrowser.openAuthSessionAsync(authUrl, redirectUri);
+      console.log('Browser result:', result);
+      
+      if (result.type === 'success') {
+        // Step 3: Extract the code from the redirect URL
+        const { url } = result;
+        console.log('Redirect URL:', url);
+        const code = url.match(/code=([^&]+)/)?.[1];
+        
+        if (!code) {
+          throw new Error('No authorization code found in the response');
+        }
+        
+        console.log('Authorization code:', code);
+        
+        // Step 4: Exchange code for tokens via your backend
+        console.log('Exchanging code for tokens');
+        // Update to use the correct callback endpoint
+        const tokenResponse = await fetch(`${API_BASE_URL.replace('/api', '')}/callback/google/?code=${code}`, {
+          method: 'GET',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+        });
+        
+        const tokenData = await handleResponse(tokenResponse);
+        console.log('Token data received');
+        
+        // Store tokens and user info
+        await AsyncStorage.setItem('accessToken', tokenData.access_token);
+        await AsyncStorage.setItem('refreshToken', tokenData.refresh_token);
+        await AsyncStorage.setItem('userData', JSON.stringify(tokenData.user));
+        
+        // Clear caches when user logs in
+        clearCache();
+        
+        return tokenData;
+      } else {
+        console.log('OAuth flow canceled or failed');
+        throw new Error('Google authentication was cancelled or failed');
+      }
+    } catch (error) {
+      console.error('Google auth error:', error);
+      throw error;
+    }
+  },
 
     // Get user details with caching
     getUserDetails: async () => {

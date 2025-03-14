@@ -288,7 +288,7 @@ const styles = StyleSheet.create({
   },
   headerContainer: {
     alignItems: "center",
-    marginTop: 70,
+    marginTop: 30,
     marginBottom: 10,
   },
   centerContainer: {
@@ -302,7 +302,7 @@ const styles = StyleSheet.create({
     color: "white",
     fontFamily: "Poppins_400Regular",
     fontSize: width * 0.07,
-    marginTop: 70,
+    marginTop: 30,
     marginBottom: 20,
   },
   searchLabel: {
@@ -465,7 +465,7 @@ const styles = StyleSheet.create({
   searchContainer: {
     alignItems: "center",
     marginBottom: 20,
-  }
+  },
 });
 
 export default SavedMeals;

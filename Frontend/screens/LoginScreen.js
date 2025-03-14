@@ -291,6 +291,7 @@ const LoginScreen = ({ navigation, route }) => {
                 color: "black",
                 textAlign: "center",
                 fontSize: isSmallScreen ? 12 : 14,
+                fontFamily: "Poppins_400Regular",
               }}
             >
               Don't have an account?
@@ -300,6 +301,7 @@ const LoginScreen = ({ navigation, route }) => {
                 color: "#0000FF",
                 textAlign: "center",
                 fontSize: isSmallScreen ? 14 : 16,
+                fontFamily: "Poppins_400Regular",
               }}
             >
               Sign Up

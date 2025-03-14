@@ -12,11 +12,16 @@ import { Ionicons } from "@expo/vector-icons";
 import { LinearGradient } from "expo-linear-gradient";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import api from "../services/api";
+import { useFonts, Poppins_400Regular } from "@expo-google-fonts/poppins";
 
 const UserProfile = () => {
   const navigation = useNavigation();
   const [userData, setUserData] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
+
+  const [fontsLoaded] = useFonts({
+    Poppins_400Regular,
+  });
 
   useEffect(() => {
     const checkAuthAndGetUser = async () => {
@@ -193,6 +198,7 @@ const styles = StyleSheet.create({
     color: "white",
     fontSize: 18,
     fontWeight: "500",
+    fontFamily: "Poppins_400Regular",
   },
   menuContainer: {
     paddingHorizontal: 30,
@@ -209,6 +215,7 @@ const styles = StyleSheet.create({
     fontWeight: "bold",
     marginBottom: 10,
     textAlign: "center",
+    fontFamily: "Poppins_400Regular",
   },
   macroRow: {
     flexDirection: "row",
@@ -221,10 +228,12 @@ const styles = StyleSheet.create({
     color: "white",
     fontSize: 18,
     fontWeight: "bold",
+    fontFamily: "Poppins_400Regular",
   },
   macroLabel: {
     color: "rgba(255, 255, 255, 0.7)",
     fontSize: 12,
+    fontFamily: "Poppins_400Regular",
   },
   menuItem: {
     flexDirection: "row",
@@ -241,6 +250,7 @@ const styles = StyleSheet.create({
     color: "white",
     fontSize: 16,
     fontWeight: "500",
+    fontFamily: "Poppins_400Regular",
   },
   logoutItem: {
     backgroundColor: "rgba(255, 255, 255, 0.05)",
@@ -252,6 +262,7 @@ const styles = StyleSheet.create({
     color: "#FF6961",
     fontSize: 16,
     fontWeight: "500",
+    fontFamily: "Poppins_400Regular",
   },
 });
 

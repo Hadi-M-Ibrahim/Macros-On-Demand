@@ -1,6 +1,6 @@
 import AsyncStorage from "@react-native-async-storage/async-storage";
 
-const API_BASE_URL = "http://34.169.212.24:8000/api";
+const API_BASE_URL = process.env.REACT_APP_API_BASE_URL; 
 
 // In-memory cache for API responses
 const apiCache = {

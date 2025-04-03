@@ -38,3 +38,7 @@ yarn-error.*
 
 # Python virtual environment
 venv/
+
+.env
+
+*.env
